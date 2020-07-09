@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QFont, QPixmap
 import tkinter as tk
 import sys
+import freeway_window as Fway
 
 
 #to get window size
@@ -32,6 +33,7 @@ class Start_Window(QMainWindow):
         self.fway_button.setFont(QFont("Arial", 18))
         self.fway_button.setMaximumWidth(int(width/5))
         self.fway_button.setMaximumHeight(int(height/8))
+        self.fway_button.clicked.connect(self.go_to_freeway)
         
 
         #intersection button
@@ -66,7 +68,16 @@ class Start_Window(QMainWindow):
         self.grid.addWidget(self.inter_button,2,1,1,1)
         self.grid.addWidget(self.version_text,1,0,1,2)
         self.grid.addItem(self.spacer,3,0,1,2)
+        
 
+    def go_to_freeway(self):
+        new = Fway.Freeway_Window(self)
+        self.close()
+        new.show()
+
+
+
+        
 
 
 def main():
@@ -75,5 +86,5 @@ def main():
     win.show()
     sys.exit(app.exec_())
 
-
-main()
+if __name__ == "__main__":
+    main()
