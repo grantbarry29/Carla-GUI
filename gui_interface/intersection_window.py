@@ -6,11 +6,11 @@ import sys
 
 import gui_test as primary
 
-class Freeway_Window(QMainWindow):
+class Intersection_Window(QMainWindow):
     def __init__(self,parent=None):
-        super(Freeway_Window, self).__init__(parent)
+        super(Intersection_Window, self).__init__(parent)
         self.setGeometry(0,0,primary.width,primary.height)
-        self.setWindowTitle("Freeway")
+        self.setWindowTitle("Intersection")
         self.initUI()
 
 
@@ -29,9 +29,8 @@ class Freeway_Window(QMainWindow):
 
         #grid
         self.grid.addWidget(self.back_button)
-
-
     
+
     def back_to_start(self):
         self.new = primary.Start_Window()
         self.close()
