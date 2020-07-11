@@ -14,7 +14,7 @@ class Intersection_Window(QMainWindow):
         self.initUI()
 
 
-    def initUI(self):
+    def initUI(self):#set min sizes!!! helps rescaling
         self.main_widget = QWidget()
         self.grid = QGridLayout()
         self.main_widget.setLayout(self.grid)
@@ -26,9 +26,13 @@ class Intersection_Window(QMainWindow):
         self.back_button.setText("Back to Start")
         self.back_button.clicked.connect(self.back_to_start)
 
+        #text
+        self.num_sections_box = QLineEdit()
+
 
         #grid
         self.grid.addWidget(self.back_button)
+        self.grid.addWidget(self.num_sections_box)
     
 
     def back_to_start(self):

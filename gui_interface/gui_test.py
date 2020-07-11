@@ -7,7 +7,7 @@ import freeway_window as Fway
 import intersection_window as Inter
 
 
-#to get window size
+#retrieve user's window size and set as dimendions
 root = tk.Tk()
 width = root.winfo_screenwidth()
 height = root.winfo_screenheight()
@@ -32,8 +32,8 @@ class Start_Window(QMainWindow):
         self.fway_button = QPushButton()
         self.fway_button.setText("Freeway")
         self.fway_button.setFont(QFont("Arial", 18))
-        self.fway_button.setMaximumWidth(int(width/5))
-        self.fway_button.setMaximumHeight(int(height/8))
+        self.fway_button.setMaximumWidth(int(width/7))
+        self.fway_button.setMaximumHeight(int(height/10))
         self.fway_button.clicked.connect(self.go_to_freeway)
         
 
@@ -41,8 +41,8 @@ class Start_Window(QMainWindow):
         self.inter_button = QPushButton()
         self.inter_button.setText("Intersection")
         self.inter_button.setFont(QFont("Arial", 18))
-        self.inter_button.setMaximumWidth(int(width/5))
-        self.inter_button.setMaximumHeight(int(height/8))
+        self.inter_button.setMaximumWidth(int(width/7))
+        self.inter_button.setMaximumHeight(int(height/10))
         self.inter_button.clicked.connect(self.go_to_intersection)
         
 
@@ -61,7 +61,7 @@ class Start_Window(QMainWindow):
 
 
         #spacer
-        self.spacer = QSpacerItem(40,40,QtWidgets.QSizePolicy.Maximum,QtWidgets.QSizePolicy.Maximum)
+        self.spacer = QSpacerItem(40,int(height/4),QtWidgets.QSizePolicy.Maximum,QtWidgets.QSizePolicy.Maximum)
 
         #grid
         self.grid.addWidget(self.title_text,0,0,3,2)
@@ -80,6 +80,8 @@ class Start_Window(QMainWindow):
         self.new = Inter.Intersection_Window(self)
         self.close()
         self.new.show()
+
+
 
 
 
