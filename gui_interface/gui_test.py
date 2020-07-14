@@ -51,6 +51,7 @@ class Start_Window(QMainWindow):
         self.version_text.setText("Version 0.00")
         self.version_text.setFont(QFont("Arial", 18))
         self.version_text.setAlignment(QtCore.Qt.AlignCenter)
+        self.version_text.setMinimumHeight(int(height/6))
 
 
         #title text
@@ -58,7 +59,7 @@ class Start_Window(QMainWindow):
         self.title_text.setText("Carla Driving Simulator")
         self.title_text.setFont(QFont("Arial", 30))
         self.title_text.setAlignment(QtCore.Qt.AlignCenter)
-
+        self.title_text.setMinimumHeight(int(height/2))
 
         #spacer
         self.spacer = QSpacerItem(40,int(height/4),QtWidgets.QSizePolicy.Maximum,QtWidgets.QSizePolicy.Maximum)
