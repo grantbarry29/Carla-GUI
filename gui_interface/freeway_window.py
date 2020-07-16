@@ -4,6 +4,7 @@ from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QFont, QPixmap
 import tkinter as tk
 import sys
+import edit_section
 
 import gui_test as primary
 
@@ -14,6 +15,12 @@ class ExtendedQLabel(QLabel):
     clicked=pyqtSignal()
     def mouseReleaseEvent(self, ev):
         self.clicked.emit()
+
+
+class Page(QWidget):
+    def __init__(self,parent):
+        super(Page, self).__init__(parent)
+        self.setGeometry(0,0,primary.width,primary.height)
 
 
 
@@ -27,11 +34,33 @@ class Freeway_Window(QMainWindow):
 
 
     def initUI(self):
-        self.main_widget = QWidget()
-        self.grid = QGridLayout()
+        """
+        self.main_widget = QWidget() #widget for general settings page
+        self.grid = QGridLayout() #set grid to layout for general settings
         self.main_widget.setLayout(self.grid)
+        self.setCentralWidget(self.main_widget) #set freeway window central_widget to main_widget
+        """
+
+        self.stack = QStackedLayout()
+        self.main_widget = QWidget()
+        self.main_widget.setLayout(self.stack)
         self.setCentralWidget(self.main_widget)
 
+        self.general_settings_widget = QWidget()
+        self.grid = QGridLayout()
+        self.general_settings_widget.setLayout(self.grid)
+        self.stack.addWidget(self.general_settings_widget)
+
+        self.new = edit_section.Edit_Section_Window()
+        self.new2 = edit_section.Edit_Section_Window()
+
+        self.list1 = list()
+        for i in range(0,10):
+            new = edit_section.Edit_Section_Window()
+            self.list1.append(new)
+            self.stack.addWidget(self.list1[i])
+
+        
 
         #back button
         self.back_button = QPushButton()
@@ -45,7 +74,7 @@ class Freeway_Window(QMainWindow):
         #General Settings text
         self.general_settings = QLabel()
         self.general_settings.setText("General Settings")
-        self.general_settings.setFont(QFont("Arial", 18))
+        self.general_settings.setFont(QFont("Arial", 24))
         self.general_settings.setAlignment(QtCore.Qt.AlignCenter)
         self.general_settings.setMaximumHeight(primary.height/10)
 
@@ -62,6 +91,7 @@ class Freeway_Window(QMainWindow):
         self.num_sections.setMinimumHeight(primary.height/20)
         self.num_sections.setMinimumWidth(primary.height/20)
         self.num_sections.setPlaceholderText("40")
+
 
 
         #Allow Collisions
@@ -134,6 +164,7 @@ class Freeway_Window(QMainWindow):
         self.edit_simulation.setFont(QFont("Arial", 14))
         self.edit_simulation.setMaximumWidth(primary.width/6)
         self.edit_simulation.setMinimumHeight(primary.height/25)
+        self.edit_simulation.clicked.connect(self.go_to_edit_section)
 
 
 
@@ -230,7 +261,7 @@ class Freeway_Window(QMainWindow):
 
 
 
-        #Grid Settings
+        #GRID SETTINGS
 
             #labels and text
         self.grid.addWidget(self.back_button,          0,0,1,1)
@@ -251,6 +282,8 @@ class Freeway_Window(QMainWindow):
         self.grid.addWidget(self.max_speed,            5,1,1,1)
         self.grid.addWidget(self.section_distance,     6,1,1,1)
         self.grid.addWidget(self.safety_distance,      7,1,1,1)
+
+
 
             #map
         move_dist = (primary.width/12)
@@ -277,7 +310,9 @@ class Freeway_Window(QMainWindow):
         self.road_button5.move(primary.width/2.6,primary.height/5.1)
 
 
-        self.section_count = 40
+
+
+
 
     def road_button_reset(self):
         self.road_button1.setText(str(self.road_array[0]))
@@ -348,6 +383,11 @@ class Freeway_Window(QMainWindow):
         self.new = primary.Start_Window()
         self.close()
         self.new.show()
+
+
+    def go_to_edit_section(self):
+        QtWidgets.QStackedLayout.setCurrentWidget(self.stack,self.list1[9])
+
 
 
 
