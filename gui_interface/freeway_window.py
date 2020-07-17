@@ -5,6 +5,7 @@ from PyQt5.QtGui import QFont, QPixmap
 import tkinter as tk
 import sys
 import edit_section
+import section_vector
 
 import gui_test as primary
 
@@ -15,13 +16,6 @@ class ExtendedQLabel(QLabel):
     clicked=pyqtSignal()
     def mouseReleaseEvent(self, ev):
         self.clicked.emit()
-
-
-class Page(QWidget):
-    def __init__(self,parent):
-        super(Page, self).__init__(parent)
-        self.setGeometry(0,0,primary.width,primary.height)
-
 
 
 
@@ -51,14 +45,8 @@ class Freeway_Window(QMainWindow):
         self.general_settings_widget.setLayout(self.grid)
         self.stack.addWidget(self.general_settings_widget)
 
-        self.new = edit_section.Edit_Section_Window()
-        self.new2 = edit_section.Edit_Section_Window()
 
-        self.list1 = list()
-        for i in range(0,10):
-            new = edit_section.Edit_Section_Window()
-            self.list1.append(new)
-            self.stack.addWidget(self.list1[i])
+        #section_vector.populate(section_vector.page_list,10)
 
         
 
@@ -90,7 +78,12 @@ class Freeway_Window(QMainWindow):
         self.num_sections.setMaximumWidth(primary.height/20)
         self.num_sections.setMinimumHeight(primary.height/20)
         self.num_sections.setMinimumWidth(primary.height/20)
-        self.num_sections.setPlaceholderText("40")
+        self.num_sections.setText("40")
+        if self.num_sections.toPlainText() == "":
+            self.num_sections.setText("0")
+        self.num_sections.textChanged.connect(self.double_right)
+        self.num_sections.textChanged.connect(self.vec_populate)
+
 
 
 
@@ -362,20 +355,23 @@ class Freeway_Window(QMainWindow):
         self.road_array[4] = 5
         self.road_button_reset()
 
+
     def double_right(self):
         if self.num_sections.toPlainText() == "":
-            val = 40
+            val = 0
         else:
             val = int(self.num_sections.toPlainText())
 
         if self.road_array[-1] == val:
             return
-        
-        self.road_array[0] = val-4
-        self.road_array[1] = val-3
-        self.road_array[2] = val-2
-        self.road_array[3] = val-1
-        self.road_array[4] = val
+
+        j = 4
+        for i in range(0,5):
+            self.road_array[i] = val - j
+            j = j - 1
+            if val - j <= 0:
+                self.road_array[i] = 0
+
         self.road_button_reset()
 
     
@@ -386,7 +382,16 @@ class Freeway_Window(QMainWindow):
 
 
     def go_to_edit_section(self):
-        QtWidgets.QStackedLayout.setCurrentWidget(self.stack,self.list1[9])
+        self.new = primary.Start_Window()
+        self.close()
+        self.new.show()
+
+    def vec_populate(self):
+        if self.num_sections.toPlainText() == "":
+            val = 0
+        else:
+            val = int(self.num_sections.toPlainText())
+        section_vector.populate(section_vector.page_list,val)
 
 
 
