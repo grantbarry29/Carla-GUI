@@ -45,10 +45,8 @@ class Freeway_Window(QMainWindow):
         self.general_settings_widget.setLayout(self.grid)
         self.stack.addWidget(self.general_settings_widget)
 
+        section_vector.page_list.append(self.general_settings_widget)
 
-        #section_vector.populate(section_vector.page_list,10)
-
-        
 
         #back button
         self.back_button = QPushButton()
@@ -78,9 +76,7 @@ class Freeway_Window(QMainWindow):
         self.num_sections.setMaximumWidth(primary.height/20)
         self.num_sections.setMinimumHeight(primary.height/20)
         self.num_sections.setMinimumWidth(primary.height/20)
-        self.num_sections.setText("40")
-        if self.num_sections.toPlainText() == "":
-            self.num_sections.setText("0")
+        self.num_sections.setPlaceholderText("40")
         self.num_sections.textChanged.connect(self.double_right)
         self.num_sections.textChanged.connect(self.vec_populate)
 
@@ -382,16 +378,29 @@ class Freeway_Window(QMainWindow):
 
 
     def go_to_edit_section(self):
-        self.new = primary.Start_Window()
-        self.close()
-        self.new.show()
+        if len(section_vector.page_list) == 1:
+            return
+        QtWidgets.QStackedLayout.setCurrentWidget(self.stack,section_vector.page_list[1])
+
+
+    def go_to_next(self):
+        index = self.stack.currentIndex() + 1
+        QtWidgets.QStackedLayout.setCurrentWidget(self.stack,section_vector.page_list[index])
+
+
+    def go_to_general_settings(self):
+        QtWidgets.QStackedLayout.setCurrentWidget(self.stack,section_vector.page_list[0])
+
 
     def vec_populate(self):
         if self.num_sections.toPlainText() == "":
             val = 0
         else:
             val = int(self.num_sections.toPlainText())
-        section_vector.populate(section_vector.page_list,val)
+        section_vector.populate(section_vector.page_list,val,self)
+        
+        for i in section_vector.page_list:
+            self.stack.addWidget(i)
 
 
 

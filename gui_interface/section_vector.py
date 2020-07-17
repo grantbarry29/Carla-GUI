@@ -5,13 +5,15 @@ from PyQt5.QtGui import QFont, QPixmap
 import tkinter as tk
 import sys
 import edit_section
+import freeway_window
 import gui_test as primary
 
 
 page_list = []  # type: List[int]
 
 
-def populate(vec, val):
+def populate(vec, val, window):
     for i in range(0,val):
-        new = edit_section.Edit_Section_Window()
+        new = edit_section.Edit_Section_Window(i,window)
         vec.append(new)
+        
