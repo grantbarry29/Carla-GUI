@@ -83,6 +83,7 @@ class Freeway_Window(QMainWindow):
 
 
 
+
         #Allow Collisions
         self.allow_collisions_text = QLabel()
         self.allow_collisions_text.setText("Allow Collisions")
