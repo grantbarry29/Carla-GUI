@@ -78,7 +78,7 @@ class Freeway_Window(QMainWindow):
         self.num_sections.setMinimumWidth(primary.height/20)
         self.num_sections.setPlaceholderText("40")
         self.num_sections.textChanged.connect(self.double_right)
-        self.num_sections.textChanged.connect(self.vec_populate)
+        #self.num_sections.textChanged.connect(self.vec_populate)
 
 
 
@@ -154,6 +154,7 @@ class Freeway_Window(QMainWindow):
         self.edit_simulation.setFont(QFont("Arial", 14))
         self.edit_simulation.setMaximumWidth(primary.width/6)
         self.edit_simulation.setMinimumHeight(primary.height/25)
+        self.edit_simulation.clicked.connect(self.vec_populate)
         self.edit_simulation.clicked.connect(self.go_to_edit_section)
 
 
