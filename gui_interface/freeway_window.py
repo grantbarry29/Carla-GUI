@@ -78,8 +78,6 @@ class Freeway_Window(QMainWindow):
         self.num_sections.setMinimumWidth(primary.height/20)
         self.num_sections.setPlaceholderText("40")
         self.num_sections.textChanged.connect(self.double_right)
-        #self.num_sections.textChanged.connect(self.vec_populate)
-
 
 
 
@@ -220,7 +218,7 @@ class Freeway_Window(QMainWindow):
 
 
             #road buttons
-        self.road_array = [1,2,3,4,5]
+        self.road_array = ["-","-","-","-","-"]
 
         self.road_button1 = QPushButton(self.map_widget)
         self.road_button1.setMaximumWidth(primary.width/40)
@@ -314,8 +312,9 @@ class Freeway_Window(QMainWindow):
 
 
     def single_left(self):
-        if self.road_array[0] == 1:
+        if self.road_array[0] == "-" or self.road_array[0] == 1:
             return
+
         
         self.road_array[0] -= 1
         self.road_array[1] -= 1
@@ -327,8 +326,10 @@ class Freeway_Window(QMainWindow):
 
 
     def single_right(self):
+        if self.road_array[0] == "-":
+            return
         if self.num_sections.toPlainText() == "":
-            val = 40
+            val = "-"
         else:
             val = int(self.num_sections.toPlainText())
 
@@ -343,7 +344,7 @@ class Freeway_Window(QMainWindow):
         self.road_button_reset()
 
     def double_left(self):
-        if self.road_array[0] == 1:
+        if self.road_array[0] == '-':
             return
         
         self.road_array[0] = 1
@@ -367,15 +368,19 @@ class Freeway_Window(QMainWindow):
         for i in range(0,5):
             self.road_array[i] = val - j
             j = j - 1
-            if val - j <= 0:
-                self.road_array[i] = 0
+            if val - j <= 1:
+                self.road_array[i] = '-'
 
         self.road_button_reset()
 
     
     def back_to_start(self):
+        for i in range(0,int(self.num_sections.toPlainText())):
+            self.stack.widget(i).destroy()
+        self.stack.deleteLater()
+        section_vector.page_list.clear()
         self.new = primary.Start_Window()
-        self.close()
+        self.destroy()
         self.new.show()
 
 
@@ -385,20 +390,23 @@ class Freeway_Window(QMainWindow):
         QtWidgets.QStackedLayout.setCurrentWidget(self.stack,section_vector.page_list[1])
 
 
-    def go_to_next(self):
-        index = self.stack.currentIndex() + 1
-        QtWidgets.QStackedLayout.setCurrentWidget(self.stack,section_vector.page_list[index])
-
-
     def go_to_general_settings(self):
         QtWidgets.QStackedLayout.setCurrentWidget(self.stack,section_vector.page_list[0])
 
 
-    def vec_populate(self):
+    def go_to_page(self, val):
+        QtWidgets.QStackedLayout.setCurrentWidget(self.stack,section_vector.page_list[val])
+
+
+    def vec_populate(self): 
         if self.num_sections.toPlainText() == "":
             val = 0
         else:
             val = int(self.num_sections.toPlainText())
+
+        if val == len(section_vector.page_list):
+            return
+
         section_vector.populate(section_vector.page_list,val,self)
         
         for i in section_vector.page_list:
