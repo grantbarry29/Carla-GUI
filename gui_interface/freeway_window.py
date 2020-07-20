@@ -76,7 +76,8 @@ class Freeway_Window(QMainWindow):
         self.num_sections.setMaximumWidth(primary.height/20)
         self.num_sections.setMinimumHeight(primary.height/20)
         self.num_sections.setMinimumWidth(primary.height/20)
-        self.num_sections.setPlaceholderText("40")
+        self.num_sections.setPlaceholderText("-")
+        self.num_sections.textChanged.connect(self.validate_input)
         self.num_sections.textChanged.connect(self.double_right)
 
 
@@ -221,29 +222,45 @@ class Freeway_Window(QMainWindow):
         self.road_array = ["-","-","-","-","-"]
 
         self.road_button1 = QPushButton(self.map_widget)
-        self.road_button1.setMaximumWidth(primary.width/40)
-        self.road_button1.setStyleSheet("background-color: orange;") 
+        self.road_button1.setMaximumWidth(primary.width/30)
+        self.road_button1.setMinimumWidth(primary.width/30)
+        self.road_button1.setMaximumHeight(primary.height/25)
+        self.road_button1.setMinimumHeight(primary.height/25)
         self.road_button1.setText(str(self.road_array[0]))
+        self.road_button1.clicked.connect(self.road_button_click_1)
+        
 
         self.road_button2 = QPushButton(self.map_widget)
-        self.road_button2.setMaximumWidth(primary.width/40)
-        self.road_button2.setStyleSheet("background-color: orange;") 
+        self.road_button2.setMaximumWidth(primary.width/30)
+        self.road_button2.setMinimumWidth(primary.width/30)
+        self.road_button2.setMaximumHeight(primary.height/25)
+        self.road_button2.setMinimumHeight(primary.height/25)
         self.road_button2.setText(str(self.road_array[1]))
+        self.road_button2.clicked.connect(self.road_button_click_2)
 
         self.road_button3 = QPushButton(self.map_widget)
-        self.road_button3.setMaximumWidth(primary.width/40)
-        self.road_button3.setStyleSheet("background-color: orange;") 
+        self.road_button3.setMaximumWidth(primary.width/30)
+        self.road_button3.setMinimumWidth(primary.width/30)
+        self.road_button3.setMaximumHeight(primary.height/25)
+        self.road_button3.setMinimumHeight(primary.height/25)
         self.road_button3.setText(str(self.road_array[2]))
+        self.road_button3.clicked.connect(self.road_button_click_3)
 
         self.road_button4 = QPushButton(self.map_widget)
-        self.road_button4.setMaximumWidth(primary.width/40)
-        self.road_button4.setStyleSheet("background-color: orange;") 
+        self.road_button4.setMaximumWidth(primary.width/30)
+        self.road_button4.setMinimumWidth(primary.width/30)
+        self.road_button4.setMaximumHeight(primary.height/25)
+        self.road_button4.setMinimumHeight(primary.height/25)
         self.road_button4.setText(str(self.road_array[3]))
+        self.road_button4.clicked.connect(self.road_button_click_4)
 
         self.road_button5 = QPushButton(self.map_widget)
-        self.road_button5.setMaximumWidth(primary.width/40)
-        self.road_button5.setStyleSheet("background-color: orange;") 
+        self.road_button5.setMaximumWidth(primary.width/30)
+        self.road_button5.setMinimumWidth(primary.width/30)
+        self.road_button5.setMaximumHeight(primary.height/25)
+        self.road_button5.setMinimumHeight(primary.height/25)
         self.road_button5.setText(str(self.road_array[4]))
+        self.road_button5.clicked.connect(self.road_button_click_5)
 
 
 
@@ -292,11 +309,11 @@ class Freeway_Window(QMainWindow):
 
 
             #road buttons
-        self.road_button1.move(primary.width/8.5,primary.height/5.1)
-        self.road_button2.move(primary.width/5.4,primary.height/5.1)
-        self.road_button3.move(primary.width/3.95,primary.height/5.1)
-        self.road_button4.move(primary.width/3.15,primary.height/5.1)
-        self.road_button5.move(primary.width/2.6,primary.height/5.1)
+        self.road_button1.move(primary.width/8.7,primary.height/5.1)
+        self.road_button2.move(primary.width/5.55,primary.height/5.1)
+        self.road_button3.move(primary.width/4.05,primary.height/5.1)
+        self.road_button4.move(primary.width/3.18,primary.height/5.1)
+        self.road_button5.move(primary.width/2.62,primary.height/5.1)
 
 
 
@@ -309,6 +326,37 @@ class Freeway_Window(QMainWindow):
         self.road_button3.setText(str(self.road_array[2]))
         self.road_button4.setText(str(self.road_array[3]))
         self.road_button5.setText(str(self.road_array[4]))
+
+    def road_button_click_helper(self,index):
+        if index == "-":
+            return
+        else:
+            index = int(index)
+        print(index)
+        self.vec_populate()
+        QtWidgets.QStackedLayout.setCurrentWidget(self.stack,section_vector.page_list[index])
+        section_vector.page_list[index].section_id.setCurrentText("Section {}".format(index))
+
+    def road_button_click_1(self):
+        index = self.road_button1.text()
+        self.road_button_click_helper(index)
+        
+
+    def road_button_click_2(self):
+        index = self.road_button2.text()
+        self.road_button_click_helper(index)
+
+    def road_button_click_3(self):
+        index = self.road_button3.text()
+        self.road_button_click_helper(index)
+
+    def road_button_click_4(self):
+        index = self.road_button4.text()
+        self.road_button_click_helper(index)
+
+    def road_button_click_5(self):
+        index = self.road_button5.text()
+        self.road_button_click_helper(index)
 
 
     def single_left(self):
@@ -396,6 +444,8 @@ class Freeway_Window(QMainWindow):
 
     def go_to_page(self, val):
         QtWidgets.QStackedLayout.setCurrentWidget(self.stack,section_vector.page_list[val])
+        section_vector.page_list[val].section_id.setCurrentText("Section {}".format(val))
+        
 
 
     def vec_populate(self): 
@@ -404,13 +454,24 @@ class Freeway_Window(QMainWindow):
         else:
             val = int(self.num_sections.toPlainText())
 
-        if val == len(section_vector.page_list):
+        if val == len(section_vector.page_list)-1:
             return
+
+        
 
         section_vector.populate(section_vector.page_list,val,self)
         
         for i in section_vector.page_list:
             self.stack.addWidget(i)
+
+    def validate_input(self):
+        text = self.num_sections.toPlainText()
+
+        if text == "":
+            return
+
+        if text.isdigit() == False:
+            self.num_sections.setText("")
 
 
 

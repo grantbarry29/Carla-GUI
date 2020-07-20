@@ -27,13 +27,16 @@ class Edit_Section_Window(QWidget):
 
         #title text
         self.section_text = QLabel()
-        self.section_text.setText("Edit Section {}".format(self.section_index+1))
+        self.section_text.setText("Edit Freeway Section")
         self.section_text.setAlignment(QtCore.Qt.AlignCenter)
         self.section_text.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
         self.section_text.setFont(QFont("Arial", 24))
         #self.section_text.setStyleSheet("background-color: #cccac6;")
         self.section_text.setMaximumHeight(primary.height/6)
         self.section_text.setMaximumWidth(primary.width/5)
+
+
+
 
 
         #back button
@@ -56,12 +59,10 @@ class Edit_Section_Window(QWidget):
         self.section_id = QComboBox()
         self.section_id.setFont(QFont("Arial", 16))
         self.section_id.setMaximumWidth(primary.width/6)
-        self.section_id.addItem("Section {}".format(self.section_index+1))
         for i in range(0,int(self.freeway_window.num_sections.toPlainText())):
-            if i == self.section_index:
-                continue
             self.section_id.addItem("Section {}".format(i+1))
         self.section_id.currentIndexChanged.connect(self.go_to_page)
+
             
 
 
@@ -94,16 +95,19 @@ class Edit_Section_Window(QWidget):
         self.add_vehicles = QPushButton()
         self.add_vehicles.setText("Add Vehicles")
         self.add_vehicles.setFont(QFont("Arial", 16))
+        self.add_vehicles.clicked.connect(self.add_vehicles_clicked)
         #self.add_vehicles.setStyleSheet("background-color: #cccac6;")
 
 
 
         #map widget
         self.map_widget = QWidget()
-        self.map_widget.setMinimumWidth(primary.width/2.1)
-        self.map_widget.setMinimumHeight(primary.height/2.5)
+        self.map_widget.setMinimumWidth(primary.width/3)
+        self.map_widget.setMaximumWidth(primary.width/3)
+        self.map_widget.setMinimumHeight(primary.height/1.4)
+        self.map_widget.setMaximumHeight(primary.height/1.4)
         #self.map_widget.setStyleSheet("background-color: yellow;")
-        self.map_widget.setMaximumWidth(primary.width/5)
+        
 
 
         #background color
@@ -122,10 +126,98 @@ class Edit_Section_Window(QWidget):
         self.map1.setPixmap(self.pixmap)
         self.map1.move( int(primary.width/6) , int(primary.height/50) )
 
+
         #right side spacer
         self.spacer2 = QLabel()
+        self.spacer2.setMaximumWidth(primary.width/3)
+        self.spacer2.setMinimumWidth(primary.width/15)
         #self.spacer2.setStyleSheet("background-color: green;")
-        self.spacer2.setMaximumWidth(primary.width/5)
+
+
+
+
+        #ADD VEHICLES
+
+            #add vehicle widget
+        
+        self.add_vehicles_widget = QWidget(self)
+        self.add_vehicles_widget.setHidden(True)
+
+        self.add_vehicles_widget.setMaximumHeight(primary.height/1.5)
+        self.add_vehicles_widget.setMinimumHeight(primary.height/1.5)
+        self.add_vehicles_widget.setMinimumWidth(primary.width/2.5)        
+        self.add_vehicles_widget.setMaximumWidth(primary.width/2.5)
+
+
+            #background color
+        self.background = QLabel(self.add_vehicles_widget)
+        self.background.setMinimumWidth(self.add_vehicles_widget.width())
+        self.background.setMinimumHeight(self.add_vehicles_widget.height())
+        self.background.setAutoFillBackground(True)
+
+
+            #new back button
+        self.add_vehicles_back_button = QPushButton(self.add_vehicles_widget)
+        self.add_vehicles_back_button.clicked.connect(self.hide_add_vehicles)
+        self.add_vehicles_back_button.setText("Close")
+        self.add_vehicles_back_button.setFont(QFont("Arial", 16))
+        self.add_vehicles_back_button.move(primary.height/100,primary.width/100)
+
+            #add vehicles title
+        self.add_vehicles_title = QLabel(self.add_vehicles_widget)
+        self.add_vehicles_title.setText("Add Vehicles")
+        self.add_vehicles_title.setFont(QFont("Arial", 20))
+        self.add_vehicles_title.move(primary.width/11,primary.height/10)
+
+
+            #subject lane
+        self.subject_lane_text = QLabel(self.add_vehicles_widget)
+        self.subject_lane_text.setText("Subject Lane")
+        self.subject_lane_text.setFont(QFont("Arial",18))
+        self.subject_lane_text.setStyleSheet("border: 0.5px solid black;") 
+        self.subject_lane_text.move(primary.width/25,primary.height/4.9)
+
+                #add vehicle
+        self.subject_lane_add_vehicle = QPushButton(self.add_vehicles_widget)
+        self.subject_lane_add_vehicle.setText("Add Vehicle")
+        self.subject_lane_add_vehicle.setFont(QFont("Arial",16))
+        self.subject_lane_add_vehicle.setMinimumWidth(primary.width/10)
+        self.subject_lane_add_vehicle.move(primary.width/6,primary.height/5)
+        self.subject_lane_add_vehicle.clicked.connect(self.add_vehicle)
+
+                #edit lane
+        self.subject_lane_edit_lane = QPushButton(self.add_vehicles_widget)
+        self.subject_lane_edit_lane.setText("Edit Lane")
+        self.subject_lane_edit_lane.setFont(QFont("Arial",16))
+        self.subject_lane_edit_lane.setMinimumWidth(primary.width/10)
+        self.subject_lane_edit_lane.move(primary.width/6,primary.height/4)
+
+
+
+            #left lane
+        self.left_lane_text = QLabel(self.add_vehicles_widget)
+        self.left_lane_text.setText("Left Lane")
+        self.left_lane_text.setFont(QFont("Arial",18))
+        self.left_lane_text.setStyleSheet("border: 0.5px solid black;") 
+        self.left_lane_text.move(primary.width/25,primary.height/2.5)
+
+
+                #add vehicle
+        self.left_lane_add_vehicle = QPushButton(self.add_vehicles_widget)
+        self.left_lane_add_vehicle.setText("Add Vehicle")
+        self.left_lane_add_vehicle.setFont(QFont("Arial",16))
+        self.left_lane_add_vehicle.setMinimumWidth(primary.width/10)
+        self.left_lane_add_vehicle.move(primary.width/6,primary.height/2.5)
+
+                #edit lane
+        self.left_lane_edit_lane = QPushButton(self.add_vehicles_widget)
+        self.left_lane_edit_lane.setText("Edit Lane")
+        self.left_lane_edit_lane.setFont(QFont("Arial",16))
+        self.left_lane_edit_lane.setMinimumWidth(primary.width/10)
+        self.left_lane_edit_lane.move(primary.width/6,primary.height/2.2)
+
+
+
 
 
 
@@ -138,8 +230,9 @@ class Edit_Section_Window(QWidget):
         self.grid.addWidget(self.import_settings_text,    3,0,1,1)
         self.grid.addWidget(self.import_settings,         3,1,1,1)
         self.grid.addWidget(self.same_as_prev,            4,0,1,1)
-        self.grid.addWidget(self.spacer,                  5,0,1,1)
-        self.grid.addWidget(self.add_vehicles,            6,0,1,1)
+        self.grid.addWidget(self.add_vehicles,            5,0,1,1)
+        self.grid.addWidget(self.spacer,                  6,0,1,1)
+        
 
 
         self.grid.addWidget(self.map_widget,              1,2,6,1)
@@ -152,6 +245,26 @@ class Edit_Section_Window(QWidget):
     def go_to_page(self):
         next_page_index = int(self.section_id.currentText()[8:])
         self.freeway_window.go_to_page(next_page_index)
+
+
+    def add_vehicles_clicked(self):
+        self.add_vehicles_widget.setHidden(False)
+        self.add_vehicles_widget.raise_()
+
+
+
+    def hide_add_vehicles(self):
+        self.add_vehicles_widget.hide()
+        self.freeway_window.go_to_general_settings()
+        self.go_to_page()
+
+
+    def add_vehicle(self):
+        self.car = QLabel(self.map_widget)
+        self.car.setStyleSheet("background-color: yellow;")
+        self.car.move(200,200)
+
+        
 
 
 
