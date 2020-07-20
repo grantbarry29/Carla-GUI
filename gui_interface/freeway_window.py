@@ -423,8 +423,9 @@ class Freeway_Window(QMainWindow):
 
     
     def back_to_start(self):
-        for i in range(0,int(self.num_sections.toPlainText())):
-            self.stack.widget(i).destroy()
+        if self.stack.count() > 1:
+            for i in range(0,int(self.num_sections.toPlainText())):
+                self.stack.widget(i).destroy()
         self.stack.deleteLater()
         section_vector.page_list.clear()
         self.new = primary.Start_Window()
