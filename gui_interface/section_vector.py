@@ -13,7 +13,12 @@ page_list = []  # type: List[int]
 
 
 def populate(vec, val, window):
-    for i in range(0,val):
+    for i in range(len(vec),val+1):
         new = edit_section.Edit_Section_Window(i,window)
         vec.append(new)
+
+def remove(vec,val):
+    for i in range(0,val):
+        vec.pop()
+
         

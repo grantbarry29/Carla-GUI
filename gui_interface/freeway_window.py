@@ -6,6 +6,7 @@ import tkinter as tk
 import sys
 import edit_section
 import section_vector
+import add_vehicles
 
 import gui_test as primary
 
@@ -121,18 +122,6 @@ class Freeway_Window(QMainWindow):
         self.max_speed.setPlaceholderText("100")
 
 
-        #Section Distance
-        self.section_distance_text = QLabel()
-        self.section_distance_text.setText("Section Distance (km)")
-        self.section_distance_text.setFont(QFont("Arial", 18))
-
-        self.section_distance = QTextEdit()
-        self.section_distance.setMaximumHeight(primary.height/20)
-        self.section_distance.setMaximumWidth(primary.height/20)
-        self.section_distance.setMinimumHeight(primary.height/20)
-        self.section_distance.setMinimumWidth(primary.height/20)
-        self.section_distance.setPlaceholderText("1000")
-
 
         #Safety Distance
         self.safety_distance_text = QLabel()
@@ -145,6 +134,15 @@ class Freeway_Window(QMainWindow):
         self.safety_distance.setMinimumHeight(primary.height/20)
         self.safety_distance.setMinimumWidth(primary.height/20)
         self.safety_distance.setPlaceholderText("10")
+
+        #Add Vehicles
+        self.add_vehicles = QPushButton()
+        self.add_vehicles.setText("Add Vehicles")
+        self.add_vehicles.setFont(QFont("Arial", 14))
+        self.add_vehicles.setMaximumWidth(primary.width/6)
+        self.add_vehicles.setMinimumHeight(primary.height/25)
+        self.add_vehicles.clicked.connect(self.show_add_vehicles)
+
 
 
         #Edit Simulation
@@ -263,6 +261,13 @@ class Freeway_Window(QMainWindow):
         self.road_button5.clicked.connect(self.road_button_click_5)
 
 
+        #ADD VEHICLES
+        self.add_vehicles_widget = add_vehicles.Add_Vehicles_Window(self,self)
+        self.add_vehicles_widget.hide()
+
+
+
+
 
 
 
@@ -276,8 +281,8 @@ class Freeway_Window(QMainWindow):
         self.grid.addWidget(self.allow_collisions_text,3,0,1,1)
         self.grid.addWidget(self.min_speed_text,       4,0,1,1)
         self.grid.addWidget(self.max_speed_text,       5,0,1,1)
-        self.grid.addWidget(self.section_distance_text,6,0,1,1)
-        self.grid.addWidget(self.safety_distance_text, 7,0,1,1)
+        self.grid.addWidget(self.safety_distance_text, 6,0,1,1)
+        self.grid.addWidget(self.add_vehicles,         7,0,1,1)
         self.grid.addWidget(self.edit_simulation,      8,0,1,1)
         self.grid.addWidget(self.start_simulation,     9,0,1,1)
 
@@ -286,8 +291,7 @@ class Freeway_Window(QMainWindow):
         self.grid.addWidget(self.allow_collisions,     3,1,1,1)
         self.grid.addWidget(self.min_speed,            4,1,1,1)
         self.grid.addWidget(self.max_speed,            5,1,1,1)
-        self.grid.addWidget(self.section_distance,     6,1,1,1)
-        self.grid.addWidget(self.safety_distance,      7,1,1,1)
+        self.grid.addWidget(self.safety_distance,      6,1,1,1)
 
 
 
@@ -332,7 +336,6 @@ class Freeway_Window(QMainWindow):
             return
         else:
             index = int(index)
-        print(index)
         self.vec_populate()
         QtWidgets.QStackedLayout.setCurrentWidget(self.stack,section_vector.page_list[index])
         section_vector.page_list[index].section_id.setCurrentText("Section {}".format(index))
@@ -426,7 +429,6 @@ class Freeway_Window(QMainWindow):
         if self.stack.count() > 1:
             for i in range(0,int(self.num_sections.toPlainText())):
                 self.stack.widget(i).destroy()
-        self.stack.deleteLater()
         section_vector.page_list.clear()
         self.new = primary.Start_Window()
         self.destroy()
@@ -446,6 +448,14 @@ class Freeway_Window(QMainWindow):
     def go_to_page(self, val):
         QtWidgets.QStackedLayout.setCurrentWidget(self.stack,section_vector.page_list[val])
         section_vector.page_list[val].section_id.setCurrentText("Section {}".format(val))
+
+    def show_add_vehicles(self):
+        self.add_vehicles_widget.show()
+
+    def hide_add_vehicles(self):
+        self.add_vehicles_widget.setVisible(False)
+        self.hide()
+        self.show()
         
 
 
@@ -458,12 +468,43 @@ class Freeway_Window(QMainWindow):
         if val == len(section_vector.page_list)-1:
             return
 
+        if val > len(section_vector.page_list)-1:
+            start_len = len(section_vector.page_list)
+            section_vector.populate(section_vector.page_list,val,self)
+        
+            for i in section_vector.page_list:
+                self.stack.addWidget(i)
+        
+            """for k in range(1,start_len):
+                for j in range(start_len,len(section_vector.page_list)-1):
+                    section_vector.page_list[k].section_id.addItem("Section {}".format(j+1))"""
+
+
+            
+
+        if val < len(section_vector.page_list)-1:
+            remove_value = len(section_vector.page_list) -1 - val
+            i = len(section_vector.page_list)-1
+            i_copy = i
+            section_vector.remove(section_vector.page_list,remove_value)
+
+            while(remove_value > 0):
+                self.stack.removeWidget(self.stack.widget(i))
+                i = i - 1
+                remove_value = remove_value - 1
+
+
+            for k in range(1,len(section_vector.page_list)):
+                for j in range(len(section_vector.page_list),i_copy):
+                    print(j)
+                    section_vector.page_list[k].section_id.removeItem(j)
+                    section_vector.page_list[k].section_id.removeItem(j-1)
+                    section_vector.page_list[k].section_id.removeItem(j+1)
+                print("\n")
+
         
 
-        section_vector.populate(section_vector.page_list,val,self)
         
-        for i in section_vector.page_list:
-            self.stack.addWidget(i)
 
     def validate_input(self):
         text = self.num_sections.toPlainText()
@@ -473,6 +514,9 @@ class Freeway_Window(QMainWindow):
 
         if text.isdigit() == False:
             self.num_sections.setText("")
+        
+        if int(text) > 100:
+            self.num_sections.setText("100")
 
 
 
