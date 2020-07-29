@@ -162,6 +162,7 @@ class Freeway_Window(QMainWindow):
         self.start_simulation.setFont(QFont("Arial", 14))
         self.start_simulation.setMaximumWidth(primary.width/6)
         self.start_simulation.setMinimumHeight(primary.height/25)
+        self.start_simulation.clicked.connect(self.gather)
 
 
 
@@ -517,6 +518,55 @@ class Freeway_Window(QMainWindow):
         
         if int(text) > 100:
             self.num_sections.setText("100")
+
+    
+    def gather(self):
+        number_freeway_sections = self.num_sections.toPlainText()
+        allow_collisions = self.allow_collisions.isChecked()
+        minimum_speed = self.min_speed.toPlainText()
+        max_speed = self.max_speed.toPlainText()
+        safety_distance = self.safety_distance.toPlainText()
+
+
+
+        print("---SETUP INFO---")
+        print("number of sections:",number_freeway_sections)
+        print("allow collisions (t/f):",allow_collisions)
+        print("minimum speed:",minimum_speed)
+        print("maximum speed:",max_speed)
+        print("safety distance:",safety_distance,"\n")
+
+
+
+        #left lane car info in tuple form (gap,model,lead(t/f),red,green,blue)
+        left_cars = list()
+        for i in self.add_vehicles_widget.left_vehicle_list:
+            data = tuple((i.gap,i.model,i.lead,i.color_r,i.color_g,i.color_b))
+            left_cars.append(data)
+
+        #right lane car info in tuple form (gap,model,lead(t/f),red,green,blue)
+        subject_cars = list()
+        for i in self.add_vehicles_widget.subject_vehicle_list:
+            data = tuple((i.gap,i.model,i.lead,i.color_r,i.color_g,i.color_b))
+            subject_cars.append(data)
+
+        print("---LEFT LANE INFO---")
+        for index,car in enumerate(left_cars):
+            print("vehicle {}:".format(index+1))
+            print("color: ({},{},{})".format(car[3],car[4],car[5]))
+            print("gap:",car[0])
+            print("model:",car[1])
+            print("lead:",car[2],"\n")
+
+        print("---SUBJECT LANE INFO---")
+        for index,car in enumerate(subject_cars):
+            print("vehicle {}:".format(index+1))
+            print("color: ({},{},{})".format(car[3],car[4],car[5]))
+            print("gap:",car[0])
+            print("model:",car[1])
+            print("lead:",car[2],"\n")
+
+
 
 
 

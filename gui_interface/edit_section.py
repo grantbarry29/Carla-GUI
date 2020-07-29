@@ -190,7 +190,7 @@ class Edit_Section_Window(QWidget):
         
 
 
-        self.grid.addWidget(self.map_widget,              1,2,5,1)
+        self.grid.addWidget(self.map_widget,                1,2,5,1)
         self.grid.addWidget(self.spacer2,                 2,3,1,1)
 
 

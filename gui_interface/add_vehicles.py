@@ -6,6 +6,7 @@ import tkinter as tk
 import sys
 import freeway_window
 import drop_down_window_add
+import drop_down_window_edit
 import vehicle
 
 import gui_test as primary
@@ -69,8 +70,9 @@ class Add_Vehicles_Window(QWidget):
 
 
         #ego vehicle
-        self.ego_vehicle = vehicle.Vehicle(self.map_widget)
-        self.ego_vehicle.setStyleSheet("background-color: #deb437;")
+        self.ego_vehicle = vehicle.Vehicle(0,1,"","","222","180","55",self.map_widget)
+        self.ego_vehicle.setText("Ego")
+        self.ego_vehicle.setFont(QFont("Arial", 10))
         self.ego_vehicle.move(primary.width/4.04,primary.height/3.1)
 
 
@@ -125,7 +127,9 @@ class Add_Vehicles_Window(QWidget):
         self.subject_lane_text = QLabel(self.add_vehicles_widget)
         self.subject_lane_text.setText("Subject Lane")
         self.subject_lane_text.setFont(QFont("Arial",18))
-        self.subject_lane_text.setStyleSheet("border: 0.5px solid black;") 
+        self.subject_lane_text.setFrameStyle(1)
+        self.subject_lane_text.setAlignment(QtCore.Qt.AlignCenter)
+        self.subject_lane_text.setMinimumWidth(primary.width/12)
         self.subject_lane_text.move(primary.width/25,primary.height/4.9)
 
                 #add vehicle
@@ -142,6 +146,7 @@ class Add_Vehicles_Window(QWidget):
         self.subject_lane_edit_lane.setFont(QFont("Arial",16))
         self.subject_lane_edit_lane.setMinimumWidth(primary.width/10)
         self.subject_lane_edit_lane.move(primary.width/6,primary.height/4)
+        self.subject_lane_edit_lane.clicked.connect(self.edit_subject_lane_click)
 
 
 
@@ -149,7 +154,9 @@ class Add_Vehicles_Window(QWidget):
         self.left_lane_text = QLabel(self.add_vehicles_widget)
         self.left_lane_text.setText("Left Lane")
         self.left_lane_text.setFont(QFont("Arial",18))
-        self.left_lane_text.setStyleSheet("border: 0.5px solid black;") 
+        self.left_lane_text.setFrameStyle(1)
+        self.left_lane_text.setAlignment(QtCore.Qt.AlignCenter)
+        self.left_lane_text.setMinimumWidth(primary.width/12)
         self.left_lane_text.move(primary.width/25,primary.height/2.5)
 
 
@@ -167,7 +174,7 @@ class Add_Vehicles_Window(QWidget):
         self.left_lane_edit_lane.setFont(QFont("Arial",16))
         self.left_lane_edit_lane.setMinimumWidth(primary.width/10)
         self.left_lane_edit_lane.move(primary.width/6,primary.height/2.2)
-
+        self.left_lane_edit_lane.clicked.connect(self.edit_left_lane_click)
 
 
 
@@ -179,6 +186,11 @@ class Add_Vehicles_Window(QWidget):
         self.grid.addWidget(self.spacer,                  1,2,-1,-1)
         self.grid.addWidget(self.spacer_bottom,           2,1,-1,-1)
         self.grid.addWidget(self.map_widget,              1,1,-1,-1)
+
+
+        #VEHICLE LISTS
+        self.subject_vehicle_list = list()
+        self.left_vehicle_list = list()
         
     
 
@@ -195,31 +207,89 @@ class Add_Vehicles_Window(QWidget):
         self.go_to_page()
 
     def add_vehicle_subject_lane_click(self):
-        self.small_widget = drop_down_window_add.Drop_Down_Window_Add(self)
+        self.add_widget_subject = drop_down_window_add.Drop_Down_Window_Add("subject",self)
 
-        self.small_widget.show()
-        self.small_widget.move(primary.width/6,primary.height/4)
+        self.add_widget_subject.show()
+        self.add_widget_subject.move(primary.width/6,primary.height/4)
 
 
     def add_vehicle_left_lane_click(self):
-        self.small_widget = drop_down_window_add.Drop_Down_Window_Add(self)
+        self.add_widget_left = drop_down_window_add.Drop_Down_Window_Add("left",self)
 
-        self.small_widget.show()
-        self.small_widget.move(primary.width/6,primary.height/2.5)
-
-
-
-
-
-    def add_vehicle(self):
-        self.car = vehicle.Vehicle(self)
-        self.car.setStyleSheet("background-color: red;")
+        self.add_widget_left.show()
+        self.add_widget_left.move(primary.width/6,primary.height/2.5)
+        self.subject_lane_add_vehicle.setEnabled(False)
+        self.subject_lane_edit_lane.setEnabled(False)
 
 
-        self.car.move(400,200)
+    def edit_subject_lane_click(self):
+        self.edit_widget_subject = drop_down_window_edit.Drop_Down_Window_Edit("subject",self)
 
+        self.edit_widget_subject.show()
+        self.edit_widget_subject.move(primary.width/6,primary.height/3.35)
+        self.subject_lane_add_vehicle.setEnabled(False)
+
+
+    def edit_left_lane_click(self):
+        self.edit_widget_left = drop_down_window_edit.Drop_Down_Window_Edit("left",self)
+
+        self.edit_widget_left.show()
+        self.edit_widget_left.move(primary.width/6,primary.height/2.2)
+        self.subject_lane_add_vehicle.setEnabled(False)
+        self.subject_lane_edit_lane.setEnabled(False)
+        self.left_lane_add_vehicle.setEnabled(False)
+
+
+
+    def add_vehicle_subject(self):
+
+        gap = self.add_widget_subject.gap.toPlainText()
+        gap = int(gap)
+        lead_follow = self.add_widget_subject.vehicle_type.currentIndex()
+        color_r = self.add_widget_subject.vehicle_color_r.toPlainText()
+        color_g = self.add_widget_subject.vehicle_color_g.toPlainText()
+        color_b = self.add_widget_subject.vehicle_color_b.toPlainText()
+        model = self.add_widget_subject.vehicle_model.currentText()
+        
+        
+        self.car = vehicle.Vehicle("subject",lead_follow,gap,model,color_r,color_g,color_b,self.map_widget)
+        
+        if lead_follow == 1:
+            self.car.move(primary.width/4.04,primary.height/3.1 + gap*15)
+        else:
+            self.car.move(primary.width/4.04,primary.height/3.1 - gap*15)
+
+
+        self.subject_vehicle_list.append(self.car)
+        self.car.setText("{}".format(len(self.left_vehicle_list)+len(self.subject_vehicle_list)))
+        self.car.setAlignment(QtCore.Qt.AlignCenter)
         self.car.show()
+        
 
+    def add_vehicle_left(self):
+        
+
+        gap = self.add_widget_left.gap.toPlainText()
+        gap = int(gap)
+        lead_follow = self.add_widget_left.vehicle_type.currentIndex()
+        color_r = self.add_widget_left.vehicle_color_r.toPlainText()
+        color_g = self.add_widget_left.vehicle_color_g.toPlainText()
+        color_b = self.add_widget_left.vehicle_color_b.toPlainText()
+        model = self.add_widget_left.vehicle_model.currentText()
+        
+        
+        self.car = vehicle.Vehicle("left",lead_follow,gap,model,color_r,color_g,color_b,self.map_widget)
+        
+        if lead_follow == 1:
+            self.car.move(primary.width/4.40,primary.height/3.1 + gap*15)
+        else:
+            self.car.move(primary.width/4.40,primary.height/3.1 - gap*15)
+
+
+        self.left_vehicle_list.append(self.car)
+        self.car.setText("{}".format(len(self.left_vehicle_list)+len(self.subject_vehicle_list)))
+        self.car.setAlignment(QtCore.Qt.AlignCenter)
+        self.car.show()
         
 
 
