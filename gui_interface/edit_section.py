@@ -3,6 +3,9 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QFont, QPixmap
 import freeway_window
+import vehicle
+import add_vehicles
+import edit_vehicle
 
 import gui_test as primary
 
@@ -28,7 +31,7 @@ class Edit_Section_Window(QWidget):
         self.section_text.setText("Edit Freeway Section")
         self.section_text.setAlignment(QtCore.Qt.AlignCenter)
         self.section_text.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
-        self.section_text.setFont(QFont("Arial", 24))
+        self.section_text.setFont(QFont("Arial", 20))
         #self.section_text.setStyleSheet("background-color: #cccac6;")
         self.section_text.setMaximumHeight(primary.height/6)
         self.section_text.setMaximumWidth(primary.width/5)
@@ -52,23 +55,30 @@ class Edit_Section_Window(QWidget):
         self.section_id_text.setText("Section ID")
         self.section_id_text.setFont(QFont("Arial", 16))
         self.section_id_text.setMaximumHeight(primary.height/15)
+        self.section_id_text.setAlignment(QtCore.Qt.AlignCenter)
         #self.section_id_text.setStyleSheet("background-color: #cccac6;")
 
         self.section_id = QComboBox()
         self.section_id.setFont(QFont("Arial", 16))
-        self.section_id.setMaximumWidth(primary.width/6)
+        self.section_id.setMaximumWidth(primary.width/9)
         for i in range(0,int(self.freeway_window.num_sections.toPlainText())):
             self.section_id.addItem("Section {}".format(i+1))
         self.section_id.currentIndexChanged.connect(self.go_to_page)
+
+        self.view2 = QtWidgets.QListView()
+        self.view2.setLayoutMode(1)
+        self.view2.setBatchSize(15)
+        self.section_id.setView(self.view2)
+
 
             
 
 
 
         #import settings
-        self.import_settings_text = QLabel()
-        self.import_settings_text.setText("Import Settings")
-        self.import_settings_text.setFont(QFont("Arial", 16))
+        self.import_settings_button = QPushButton()
+        self.import_settings_button.setText("Import Settings")
+        self.import_settings_button.setFont(QFont("Arial", 16))
         
 
         self.import_settings = QComboBox()
@@ -77,16 +87,10 @@ class Edit_Section_Window(QWidget):
         for i in range(0,int(self.freeway_window.num_sections.toPlainText())):
             self.import_settings.addItem("Section {}".format(i+1))
 
-
-
-
-
-        #Edit vehicles
-        self.edit_vehicles = QPushButton()
-        self.edit_vehicles.setText("Edit Vehicle Behavior")
-        self.edit_vehicles.setFont(QFont("Arial", 16))
-        self.edit_vehicles.clicked.connect(self.edit_vehicles_clicked)
-        #self.edit_vehicles.setStyleSheet("background-color: #cccac6;")
+        self.view3 = QtWidgets.QListView()
+        self.view3.setLayoutMode(1)
+        self.view3.setBatchSize(15)
+        self.import_settings.setView(self.view3)
 
 
 
@@ -116,11 +120,19 @@ class Edit_Section_Window(QWidget):
         self.map1.setPixmap(self.pixmap)
         self.map1.move( int(primary.width/6) , int(primary.height/50) )
 
+        #ego vehicle
+        self.ego_vehicle = vehicle.Vehicle(0,1,"","","222","180","55",self.map_widget)
+        self.ego_vehicle.setText("Ego")
+        self.ego_vehicle.setFont(QFont("Arial", 10))
+        self.ego_vehicle.move(primary.width/4.04,primary.height/3.1)
+        self.ego_vehicle.clicked.connect(self.show_edit_vehicle)
+
 
         #bottom spacer
         self.spacer = QLabel()
-        self.spacer.setMaximumHeight(primary.height/3)
+        self.spacer.setMaximumHeight(primary.height/8)
         #self.spacer.setStyleSheet("background-color: red;")
+
 
 
         #right side spacer
@@ -132,48 +144,23 @@ class Edit_Section_Window(QWidget):
 
 
 
+        #EDIT EGO VEHICLE WINDOW
+        self.edit_vehicle_window = edit_vehicle.Edit_Vehicle_Widget(self)
+        self.edit_vehicle_window.hide()
+
+
+
+
         #ADD VEHICLES
 
-            #add vehicle widget
+
+        #add vehicles button
+        self.add_vehicles = QPushButton()
+        self.add_vehicles.setText("Add Vehicles")
+        self.add_vehicles.setFont(QFont("Arial", 16))
+        self.add_vehicles.clicked.connect(self.freeway_window.show_add_vehicles)
+
         
-        self.edit_vehicles_widget = QWidget(self)
-        self.edit_vehicles_widget.setHidden(True)
-
-        self.edit_vehicles_widget.setMaximumHeight(primary.height/1.5)
-        self.edit_vehicles_widget.setMinimumHeight(primary.height/1.5)
-        self.edit_vehicles_widget.setMinimumWidth(primary.width/2.5)        
-        self.edit_vehicles_widget.setMaximumWidth(primary.width/2.5)
-
-
-            #background color
-        self.background = QLabel(self.edit_vehicles_widget)
-        self.background.setMinimumWidth(self.edit_vehicles_widget.width())
-        self.background.setMinimumHeight(self.edit_vehicles_widget.height())
-        self.background.setAutoFillBackground(True)
-
-
-            #new back button
-        self.edit_vehicles_back_button = QPushButton(self.edit_vehicles_widget)
-        self.edit_vehicles_back_button.clicked.connect(self.hide_edit_vehicles)
-        self.edit_vehicles_back_button.setText("Back to Section Choice")
-        self.edit_vehicles_back_button.setFont(QFont("Arial", 16))
-        self.edit_vehicles_back_button.move(primary.height/100,primary.width/100)
-
-            #add vehicles title
-        self.edit_vehicles_title = QLabel(self.edit_vehicles_widget)
-        self.edit_vehicles_title.setText("Edit Vehicle Behavior")
-        self.edit_vehicles_title.setFont(QFont("Arial", 20))
-        self.edit_vehicles_title.move(primary.width/11,primary.height/10)
-
-            #click on vehicle to edit
-        self.edit_vehicle_label = QLabel(self.edit_vehicles_widget)
-        self.edit_vehicle_label.setText("Click on a vehicle to edit...")
-        self.edit_vehicle_label.setFont(QFont("Arial", 16))
-        self.edit_vehicle_label.move(primary.width/30,primary.height/3)
-
-
-
-
 
 
 
@@ -182,40 +169,28 @@ class Edit_Section_Window(QWidget):
         self.grid.addWidget(self.section_text,            1,0,1,2)
         self.grid.addWidget(self.section_id_text,         2,0,1,1)
         self.grid.addWidget(self.section_id,              2,1,1,1)
-        self.grid.addWidget(self.import_settings_text,    3,0,1,1)
-        self.grid.addWidget(self.import_settings,         3,1,1,1)
-        #self.grid.addWidget(self.same_as_prev,            4,0,1,1)
-        self.grid.addWidget(self.edit_vehicles,            4,0,1,1)
-        self.grid.addWidget(self.spacer,                  5,0,1,1)
+        self.grid.addWidget(self.add_vehicles,            3,0,1,1)
+        self.grid.addWidget(self.spacer,                  4,0,1,1)
+        self.grid.addWidget(self.import_settings_button,  5,0,1,1)
+        self.grid.addWidget(self.import_settings,         5,1,1,1) 
         
 
 
-        self.grid.addWidget(self.map_widget,                1,2,5,1)
+        self.grid.addWidget(self.map_widget,              1,2,5,1)
         self.grid.addWidget(self.spacer2,                 2,3,1,1)
 
 
-
-        
         
     def go_to_page(self):
         next_page_index = int(self.section_id.currentText()[8:])
         self.freeway_window.go_to_page(next_page_index)
 
-
-    def edit_vehicles_clicked(self):
-        self.edit_vehicles_widget.setHidden(False)
-        self.edit_vehicles_widget.raise_()
-
-
-
-    def hide_edit_vehicles(self):
-        self.edit_vehicles_widget.hide()
-        self.freeway_window.go_to_general_settings()
-        self.go_to_page()
+    def show_edit_vehicle(self):
+        self.edit_vehicle_window.show()
+        self.edit_vehicle_window.raise_()
 
 
 
-        
 
 
 

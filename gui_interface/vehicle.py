@@ -26,6 +26,7 @@ class Vehicle(QLabel):
         self.setMinimumWidth(primary.width/65)
         self.setMaximumHeight(primary.height/22)
         self.setMaximumWidth(primary.width/65)
+        self.setAlignment(QtCore.Qt.AlignCenter)
         self.setFrameStyle(1)
 
         #calculate luminance
@@ -38,7 +39,9 @@ class Vehicle(QLabel):
         self.setStyleSheet("background:rgb({},{},{}); color:{};".format(self.color_r,self.color_g,self.color_b,text_color))
         
 
-
+    clicked=pyqtSignal()
+    def mouseReleaseEvent(self, ev):
+        self.clicked.emit()
 
 
 

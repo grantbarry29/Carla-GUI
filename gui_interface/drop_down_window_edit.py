@@ -77,7 +77,6 @@ class Drop_Down_Window_Edit(QFrame):
 
         #GRID SETTINGS
         self.grid.addWidget(self.close_button, 0,0,1,2)
-        print(len(self.subject_labels))
 
 
 
@@ -96,7 +95,6 @@ class Drop_Down_Window_Edit(QFrame):
             self.parent_window.subject_vehicle_list[index].destroy()
             self.hide()
             self.show()
-            print("balls")
         return delete
 
 

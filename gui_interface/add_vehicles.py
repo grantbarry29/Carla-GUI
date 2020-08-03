@@ -4,7 +4,7 @@ from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QFont, QPixmap
 import tkinter as tk
 import sys
-import freeway_window
+import edit_section
 import drop_down_window_add
 import drop_down_window_edit
 import vehicle
@@ -30,14 +30,15 @@ class Add_Vehicles_Window(QWidget):
 
 
 
-
         #back button
         self.back_button = QPushButton()
         self.back_button.setText("Back")
         self.back_button.setFont(QFont("Arial", 16))
         self.back_button.setMaximumWidth(primary.width/10)
         self.back_button.setMaximumHeight(primary.height/26)
+        self.back_button.clicked.connect(self.freeway_window.copy_map_to_sections)
         self.back_button.clicked.connect(self.freeway_window.hide_add_vehicles)
+        
 
 
 
@@ -46,8 +47,8 @@ class Add_Vehicles_Window(QWidget):
         self.map_widget = QWidget()
         self.map_widget.setMinimumWidth(primary.width/3)
         self.map_widget.setMaximumWidth(primary.width/3)
-        self.map_widget.setMinimumHeight(primary.height/1.4)
-        self.map_widget.setMaximumHeight(primary.height/1.4)
+        self.map_widget.setMinimumHeight(primary.height/1.3)
+        self.map_widget.setMaximumHeight(primary.height/1.3)
         #self.map_widget.setStyleSheet("background-color: yellow;")
         
 
@@ -57,7 +58,7 @@ class Add_Vehicles_Window(QWidget):
         self.map_background.setStyleSheet("background-color: #cccac6;")
         self.map_background.setMinimumHeight(primary.height/1.41)
         self.map_background.setMinimumWidth(primary.width/7)
-        self.map_background.move(primary.width/6.75,0)
+        self.map_background.move( primary.width/26,primary.height/70)
 
 
         #map
@@ -66,14 +67,14 @@ class Add_Vehicles_Window(QWidget):
 
         self.map1 = QLabel(self.map_widget)
         self.map1.setPixmap(self.pixmap)
-        self.map1.move( int(primary.width/6) , int(primary.height/50) )
+        self.map1.move( int(primary.width/17.5) , int(primary.height/30) )
 
 
         #ego vehicle
         self.ego_vehicle = vehicle.Vehicle(0,1,"","","222","180","55",self.map_widget)
         self.ego_vehicle.setText("Ego")
         self.ego_vehicle.setFont(QFont("Arial", 10))
-        self.ego_vehicle.move(primary.width/4.04,primary.height/3.1)
+        self.ego_vehicle.move(primary.width/7.27,primary.height/2.98)
 
 
 
@@ -81,6 +82,8 @@ class Add_Vehicles_Window(QWidget):
         #right side spacer
         self.spacer = QLabel()
         self.spacer.setMaximumHeight(primary.height/4)
+        self.spacer.setMaximumWidth(primary.width/2)
+        self.spacer.setMinimumWidth(primary.width/2)
         #self.spacer.setStyleSheet("background-color: yellow;")
 
 
@@ -94,7 +97,6 @@ class Add_Vehicles_Window(QWidget):
 
 
         #ADD VEHICLES
-
         
 
             #add vehicle widget
@@ -255,14 +257,15 @@ class Add_Vehicles_Window(QWidget):
         self.car = vehicle.Vehicle("subject",lead_follow,gap,model,color_r,color_g,color_b,self.map_widget)
         
         if lead_follow == 1:
-            self.car.move(primary.width/4.04,primary.height/3.1 + gap*15)
+            self.car.move(primary.width/7.27,primary.height/3.1 + gap*15)
         else:
-            self.car.move(primary.width/4.04,primary.height/3.1 - gap*15)
+            self.car.move(primary.width/7.27,primary.height/3.1 - gap*15)
 
 
         self.subject_vehicle_list.append(self.car)
         self.car.setText("{}".format(len(self.left_vehicle_list)+len(self.subject_vehicle_list)))
         self.car.setAlignment(QtCore.Qt.AlignCenter)
+        self.car.setObjectName("car")
         self.car.show()
         
 
@@ -281,14 +284,14 @@ class Add_Vehicles_Window(QWidget):
         self.car = vehicle.Vehicle("left",lead_follow,gap,model,color_r,color_g,color_b,self.map_widget)
         
         if lead_follow == 1:
-            self.car.move(primary.width/4.40,primary.height/3.1 + gap*15)
+            self.car.move(primary.width/8.3,primary.height/3.1 + gap*15)
         else:
-            self.car.move(primary.width/4.40,primary.height/3.1 - gap*15)
+            self.car.move(primary.width/8.3,primary.height/3.1 - gap*15)
 
 
         self.left_vehicle_list.append(self.car)
         self.car.setText("{}".format(len(self.left_vehicle_list)+len(self.subject_vehicle_list)))
-        self.car.setAlignment(QtCore.Qt.AlignCenter)
+        self.car.setObjectName("car")
         self.car.show()
         
 
