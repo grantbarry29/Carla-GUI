@@ -91,6 +91,7 @@ class Edit_Section_Window(QWidget):
         self.view3.setLayoutMode(1)
         self.view3.setBatchSize(15)
         self.import_settings.setView(self.view3)
+        
 
 
 
@@ -109,7 +110,7 @@ class Edit_Section_Window(QWidget):
         self.map_background.setStyleSheet("background-color: #cccac6;")
         self.map_background.setMinimumHeight(primary.height/1.41)
         self.map_background.setMinimumWidth(primary.width/7)
-        self.map_background.move(primary.width/6.75,0)
+        self.map_background.move(primary.width/6,primary.height/200)
 
 
         #map
@@ -118,14 +119,15 @@ class Edit_Section_Window(QWidget):
 
         self.map1 = QLabel(self.map_widget)
         self.map1.setPixmap(self.pixmap)
-        self.map1.move( int(primary.width/6) , int(primary.height/50) )
+        self.map1.move( int(primary.width/5.38) , int(primary.height/40) )
 
         #ego vehicle
         self.ego_vehicle = vehicle.Vehicle(0,1,"","","222","180","55",self.map_widget)
         self.ego_vehicle.setText("Ego")
         self.ego_vehicle.setFont(QFont("Arial", 10))
-        self.ego_vehicle.move(primary.width/4.04,primary.height/3.1)
-        self.ego_vehicle.clicked.connect(self.show_edit_vehicle)
+        self.ego_vehicle.move(primary.width/3.755,primary.height/3.06)
+        self.ego_vehicle.clicked.connect(self.show_edit_ego_vehicle)
+
 
 
         #bottom spacer
@@ -148,6 +150,8 @@ class Edit_Section_Window(QWidget):
         self.edit_vehicle_window = edit_vehicle.Edit_Vehicle_Widget(self)
         self.edit_vehicle_window.hide()
 
+        #EDIT VEHICLE WINDOWS
+        self.edit_vehicle_list = list()
 
 
 
@@ -185,9 +189,10 @@ class Edit_Section_Window(QWidget):
         next_page_index = int(self.section_id.currentText()[8:])
         self.freeway_window.go_to_page(next_page_index)
 
-    def show_edit_vehicle(self):
-        self.edit_vehicle_window.show()
-        self.edit_vehicle_window.raise_()
+    def show_edit_ego_vehicle(self):
+        self.freeway_window.edit_ego_vehicle.show()
+        self.freeway_window.edit_ego_vehicle.raise_()
+
 
 
 

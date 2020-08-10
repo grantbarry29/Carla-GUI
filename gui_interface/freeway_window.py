@@ -2,12 +2,15 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QFont, QPixmap
+from functools import partial
 import tkinter as tk
 import sys
 import edit_section
 import section_vector
 import add_vehicles
 import vehicle
+import edit_vehicle
+import edit_vehicle_ego
 
 import gui_test as primary
 
@@ -108,7 +111,7 @@ class Freeway_Window(QMainWindow):
         self.min_speed.setMaximumWidth(primary.height/20)
         self.min_speed.setMinimumHeight(primary.height/20)
         self.min_speed.setMinimumWidth(primary.height/20)
-        self.min_speed.setPlaceholderText("54")
+        self.min_speed.setText("54")
 
 
         #Max Speed
@@ -121,7 +124,7 @@ class Freeway_Window(QMainWindow):
         self.max_speed.setMaximumWidth(primary.height/20)
         self.max_speed.setMinimumHeight(primary.height/20)
         self.max_speed.setMinimumWidth(primary.height/20)
-        self.max_speed.setPlaceholderText("108")
+        self.max_speed.setText("108")
 
 
 
@@ -135,7 +138,7 @@ class Freeway_Window(QMainWindow):
         self.safety_distance.setMaximumWidth(primary.height/20)
         self.safety_distance.setMinimumHeight(primary.height/20)
         self.safety_distance.setMinimumWidth(primary.height/20)
-        self.safety_distance.setPlaceholderText("15")
+        self.safety_distance.setText("15")
 
 
 
@@ -146,7 +149,7 @@ class Freeway_Window(QMainWindow):
         self.start_simulation.setFont(QFont("Arial", 14))
         self.start_simulation.setMaximumWidth(primary.width/6)
         self.start_simulation.setMinimumHeight(primary.height/25)
-        self.start_simulation.clicked.connect(self.copy_map_to_sections)
+        self.start_simulation.clicked.connect(self.gather)
 
 
 
@@ -213,6 +216,7 @@ class Freeway_Window(QMainWindow):
         self.road_button1.setText(str(self.road_array[0]))
         self.road_button1.clicked.connect(self.road_button_click_1)
         self.road_button1.clicked.connect(self.copy_map_to_sections)
+
         
 
         self.road_button2 = QPushButton(self.map_widget)
@@ -256,10 +260,9 @@ class Freeway_Window(QMainWindow):
         self.add_vehicles_widget = add_vehicles.Add_Vehicles_Window(self,self)
         self.add_vehicles_widget.hide()
 
-
-
-
-
+        #EDIT EGO VEHICLE
+        self.edit_ego_vehicle = edit_vehicle_ego.Edit_Vehicle_Ego_Widget(self)
+        self.edit_ego_vehicle.hide()
 
 
 
@@ -488,9 +491,7 @@ class Freeway_Window(QMainWindow):
 
             for k in range(1,len(section_vector.page_list)):
                 for j in range(len(section_vector.page_list),i_copy):
-                    print(j)
                     section_vector.page_list[k].section_id.removeItem(j)
-                print("\n")
 
         
 
@@ -530,32 +531,65 @@ class Freeway_Window(QMainWindow):
         for i in range(1,len(section_vector.page_list)):
 
             z = 1
+            subject_lead_count = 0
+            subject_follow_count = 0
+            left_lead_count = 0
+            left_follow_count = 0
             for settings in car_attribute_list:
                 gap = int(settings[2])
                 car_copy = vehicle.Vehicle(settings[0],settings[1],settings[2],settings[3],settings[4],settings[5],settings[6])
                 car_copy.setParent(section_vector.page_list[i].map_widget)
 
-                if car_copy.lane == "subject":
-                    if car_copy.lead:
-                        car_copy.move( primary.width/4.035, primary.height/3.1 + gap*15  )
+
+                self.left_follow_gaps = self.add_vehicles_widget.left_follow_gaps
+                self.subject_follow_gaps = self.add_vehicles_widget.subject_follow_gaps
+                self.left_lead_gaps = self.add_vehicles_widget.left_lead_gaps
+                self.subject_lead_gaps = self.add_vehicles_widget.subject_lead_gaps
+
+                if car_copy.lead == 0:
+                    if car_copy.lane == "subject":
+                        car_copy.move(primary.width/3.745, self.subject_lead_gaps[subject_lead_count])
+                        subject_lead_count += 1
                     else:
-                        car_copy.move( primary.width/4.035, primary.height/3.1 - gap*15  )
-                if car_copy.lane == "left":
-                    if car_copy.lead:
-                        car_copy.move( primary.width/4.395, primary.height/3.1 + gap*15  )
+                        car_copy.move(primary.width/4.05, self.left_lead_gaps[left_lead_count])
+                        left_lead_count += 1
+
+                else:
+                    if car_copy.lane == "subject":
+                        car_copy.move(primary.width/3.745, self.subject_follow_gaps[subject_follow_count])
+                        subject_follow_count += 1
                     else:
-                        car_copy.move( primary.width/4.395, primary.height/3.1 - gap*15  )
+                        car_copy.move(primary.width/4.05, self.left_follow_gaps[left_follow_count])
+                        left_follow_count += 1
                 
 
-
+                car_copy.clicked.connect(partial(self.do,i,z-1) )    
+                car_copy.setObjectName("car")
                 car_copy.setText(str(z))
                 z+=1
-                car_copy.clicked.connect(section_vector.page_list[i].show_edit_vehicle)
                 car_copy.show()
 
+    def add_vehicle_edit_windows(self):
+
+        car_count = 0
+        for widget in self.add_vehicles_widget.map_widget.children():
+            if widget.objectName() == "car":
+                car_count += 1
+
+        for page in range(1,len(section_vector.page_list)):
+            for car_index in range(0,car_count):
+                edit_car = edit_vehicle.Edit_Vehicle_Widget(car_index+1,section_vector.page_list[page])
+                edit_car.setParent(section_vector.page_list[page])
+                edit_car.car_index = car_index
+                edit_car.setObjectName("edit")
+                edit_car.safety_distance.setText(self.safety_distance.toPlainText())  
+                edit_car.hide()
+                section_vector.page_list[page].edit_vehicle_list.append(edit_car)
 
 
-
+    def do(self,page_index,car_index):
+        section_vector.page_list[page_index].edit_vehicle_list[car_index].show()
+        section_vector.page_list[page_index].edit_vehicle_list[car_index].raise_()
 
     
     def gather(self):
@@ -588,21 +622,49 @@ class Freeway_Window(QMainWindow):
             data = tuple((i.gap,i.model,i.lead,i.color_r,i.color_g,i.color_b))
             subject_cars.append(data)
 
+                
+
         print("---LEFT LANE INFO---")
         for index,car in enumerate(left_cars):
-            print("vehicle {}:".format(index+1))
-            print("color: ({},{},{})".format(car[3],car[4],car[5]))
-            print("gap:",car[0])
-            print("model:",car[1])
-            print("lead:",car[2],"\n")
+            print("Vehicle {}:".format(index+1))
+            print("Color: ({},{},{})".format(car[3],car[4],car[5]))
+            print("Gap:",car[0])
+            print("Model:",car[1])
+            print("Lead:",car[2],"\n")
 
         print("---SUBJECT LANE INFO---")
         for index,car in enumerate(subject_cars):
-            print("vehicle {}:".format(index+1))
-            print("color: ({},{},{})".format(car[3],car[4],car[5]))
-            print("gap:",car[0])
-            print("model:",car[1])
-            print("lead:",car[2],"\n")
+            print("Vehicle {}:".format(index+1))
+            print("Color: ({},{},{})".format(car[3],car[4],car[5]))
+            print("Gap:",car[0])
+            print("Model:",car[1])
+            print("Lead:",car[2],"\n")
+
+
+        print("---EGO VEHICLE SETTINGS---")
+        ego = self.edit_ego_vehicle
+        print("Model:", ego.vehicle_model.currentText())
+        print("Color: ({},{},{})".format(ego.vehicle_color_r.toPlainText(),ego.vehicle_color_g.toPlainText(),ego.vehicle_color_b.toPlainText()))
+        print("Safety distance:", ego.safety_distance.toPlainText())
+        print("\n")
+
+
+        print("---VEHICLE BEHAVIOR INFO---")
+        for i in range(1,len(section_vector.page_list)):
+            print("\n--Section {}--".format(i))
+            for j in section_vector.page_list[i].edit_vehicle_list:
+                print("-Vehicle {}-".format(j.car_index + 1))
+                print("Vary Speed:", j.vary_speed_button.isChecked())
+                print("Maintain Speed:", j.maintain_speed_button.isChecked())
+                print("Lane Change:", j.lane_change_yes.isChecked())
+                if j.lane_change_yes.isChecked():
+                    print("Lane Change Time:", j.lane_change_time.toPlainText())
+                print("Safety Distance:", j.safety_distance.toPlainText())
+                if j.vehicle_color_r.toPlainText() == "":
+                    print("Color: Default")
+                else:
+                    print("Color: ({},{},{})".format(j.vehicle_color_r.toPlainText(),j.vehicle_color_g.toPlainText(),j.vehicle_color_b.toPlainText()))
+
 
 
 

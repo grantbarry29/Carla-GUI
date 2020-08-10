@@ -37,6 +37,7 @@ class Add_Vehicles_Window(QWidget):
         self.back_button.setMaximumWidth(primary.width/10)
         self.back_button.setMaximumHeight(primary.height/26)
         self.back_button.clicked.connect(self.freeway_window.copy_map_to_sections)
+        self.back_button.clicked.connect(self.freeway_window.add_vehicle_edit_windows)
         self.back_button.clicked.connect(self.freeway_window.hide_add_vehicles)
         
 
@@ -142,6 +143,7 @@ class Add_Vehicles_Window(QWidget):
         self.subject_lane_add_vehicle.move(primary.width/6,primary.height/5)
         self.subject_lane_add_vehicle.clicked.connect(self.add_vehicle_subject_lane_click)
 
+        """
                 #edit lane
         self.subject_lane_edit_lane = QPushButton(self.add_vehicles_widget)
         self.subject_lane_edit_lane.setText("Edit Lane")
@@ -149,7 +151,7 @@ class Add_Vehicles_Window(QWidget):
         self.subject_lane_edit_lane.setMinimumWidth(primary.width/10)
         self.subject_lane_edit_lane.move(primary.width/6,primary.height/4)
         self.subject_lane_edit_lane.clicked.connect(self.edit_subject_lane_click)
-
+        """
 
 
             #left lane
@@ -170,6 +172,7 @@ class Add_Vehicles_Window(QWidget):
         self.left_lane_add_vehicle.move(primary.width/6,primary.height/2.5)
         self.left_lane_add_vehicle.clicked.connect(self.add_vehicle_left_lane_click)
 
+        """
                 #edit lane
         self.left_lane_edit_lane = QPushButton(self.add_vehicles_widget)
         self.left_lane_edit_lane.setText("Edit Lane")
@@ -177,7 +180,7 @@ class Add_Vehicles_Window(QWidget):
         self.left_lane_edit_lane.setMinimumWidth(primary.width/10)
         self.left_lane_edit_lane.move(primary.width/6,primary.height/2.2)
         self.left_lane_edit_lane.clicked.connect(self.edit_left_lane_click)
-
+        """
 
 
 
@@ -193,13 +196,19 @@ class Add_Vehicles_Window(QWidget):
         #VEHICLE LISTS
         self.subject_vehicle_list = list()
         self.left_vehicle_list = list()
+
+        self.subject_lead_gaps = list()
+        self.subject_follow_gaps = list()
+
+        self.left_lead_gaps = list()
+        self.left_follow_gaps = list()
         
     
 
 
 
     def add_vehicles_clicked(self):
-        self.add_vehicles_widget.setHidden(False)
+        #self.add_vehicles_widget.setHidden(False)
         self.add_vehicles_widget.raise_()
 
 
@@ -220,8 +229,8 @@ class Add_Vehicles_Window(QWidget):
 
         self.add_widget_left.show()
         self.add_widget_left.move(primary.width/6,primary.height/2.5)
-        self.subject_lane_add_vehicle.setEnabled(False)
-        self.subject_lane_edit_lane.setEnabled(False)
+        #self.subject_lane_add_vehicle.setEnabled(False)
+        #self.subject_lane_edit_lane.setEnabled(False)
 
 
     def edit_subject_lane_click(self):
@@ -229,7 +238,7 @@ class Add_Vehicles_Window(QWidget):
 
         self.edit_widget_subject.show()
         self.edit_widget_subject.move(primary.width/6,primary.height/3.35)
-        self.subject_lane_add_vehicle.setEnabled(False)
+        #self.subject_lane_add_vehicle.setEnabled(False)
 
 
     def edit_left_lane_click(self):
@@ -237,12 +246,12 @@ class Add_Vehicles_Window(QWidget):
 
         self.edit_widget_left.show()
         self.edit_widget_left.move(primary.width/6,primary.height/2.2)
-        self.subject_lane_add_vehicle.setEnabled(False)
-        self.subject_lane_edit_lane.setEnabled(False)
-        self.left_lane_add_vehicle.setEnabled(False)
+        #self.subject_lane_add_vehicle.setEnabled(False)
+        #self.subject_lane_edit_lane.setEnabled(False)
+        #self.left_lane_add_vehicle.setEnabled(False)
 
 
-
+    #adds vehicle to subject lane
     def add_vehicle_subject(self):
 
         gap = self.add_widget_subject.gap.toPlainText()
@@ -256,10 +265,21 @@ class Add_Vehicles_Window(QWidget):
         
         self.car = vehicle.Vehicle("subject",lead_follow,gap,model,color_r,color_g,color_b,self.map_widget)
         
-        if lead_follow == 1:
-            self.car.move(primary.width/7.27,primary.height/3.1 + gap*15)
-        else:
-            self.car.move(primary.width/7.27,primary.height/3.1 - gap*15)
+        if lead_follow == 1: #if follow vehicle
+            if not self.subject_follow_gaps: #if no cars in subject follow lane
+                self.car.move(primary.width/7.27,primary.height/3.1 + self.car.length + gap*8)
+                self.subject_follow_gaps.append(primary.height/3.1 + self.car.length + gap*8)
+            else:
+                self.car.move(primary.width/7.27,self.subject_follow_gaps[-1] + self.car.length + gap*5)
+                self.subject_follow_gaps.append(self.subject_follow_gaps[-1] + self.car.length+ gap*5)
+
+        else: #if lead vehicle
+            if not self.subject_lead_gaps: #if no cars in subject lead lane
+                self.car.move(primary.width/7.27,primary.height/3.1 - self.car.length/2 - gap*8)
+                self.subject_lead_gaps.append(primary.height/3.1 - self.car.length/2 - gap*8)
+            else:
+                self.car.move(primary.width/7.27,self.subject_lead_gaps[-1] - self.car.length - gap*5)
+                self.subject_lead_gaps.append(self.subject_lead_gaps[-1] - self.car.length - gap*5)
 
 
         self.subject_vehicle_list.append(self.car)
@@ -267,7 +287,6 @@ class Add_Vehicles_Window(QWidget):
         self.car.setAlignment(QtCore.Qt.AlignCenter)
         self.car.setObjectName("car")
         self.car.show()
-        
 
     def add_vehicle_left(self):
         
@@ -284,9 +303,20 @@ class Add_Vehicles_Window(QWidget):
         self.car = vehicle.Vehicle("left",lead_follow,gap,model,color_r,color_g,color_b,self.map_widget)
         
         if lead_follow == 1:
-            self.car.move(primary.width/8.3,primary.height/3.1 + gap*15)
+            if not self.left_follow_gaps: #if no cars in subject follow lane
+                self.car.move(primary.width/8.3,primary.height/3.1 + self.car.length + gap*8)
+                self.left_follow_gaps.append(primary.height/3.1 + self.car.length + gap*8)
+            else:
+                self.car.move(primary.width/8.3,self.left_follow_gaps[-1] + self.car.length + gap*5)
+                self.left_follow_gaps.append(self.left_follow_gaps[-1] + self.car.length+ gap*5)
+
         else:
-            self.car.move(primary.width/8.3,primary.height/3.1 - gap*15)
+            if not self.left_lead_gaps: #if no cars in subject lead lane
+                self.car.move(primary.width/8.3,primary.height/3.1 - self.car.length/2 - gap*8)
+                self.left_lead_gaps.append(primary.height/3.1 - self.car.length/2 - gap*8)
+            else:
+                self.car.move(primary.width/8.3,self.left_lead_gaps[-1] - self.car.length - gap*5)
+                self.left_lead_gaps.append(self.left_lead_gaps[-1] - self.car.length - gap*5)
 
 
         self.left_vehicle_list.append(self.car)
@@ -294,7 +324,6 @@ class Add_Vehicles_Window(QWidget):
         self.car.setObjectName("car")
         self.car.show()
         
-
 
 
         

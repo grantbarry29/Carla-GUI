@@ -9,9 +9,10 @@ import add_vehicles
 import gui_test as primary
 
 class Edit_Vehicle_Widget(QFrame):
-    def __init__(self,parent=None):
+    def __init__(self,car_index,parent=None):
         super(Edit_Vehicle_Widget, self).__init__(parent)
         self.parent_window = parent
+        self.car_index = car_index
         self.initUI()
 
 
@@ -37,7 +38,7 @@ class Edit_Vehicle_Widget(QFrame):
 
         #title text
         self.title_text = QLabel()
-        self.title_text.setText("Vehicle Edit")
+        self.title_text.setText("Edit Vehicle {}".format(self.car_index))
         self.title_text.setFont(QFont("Arial", 20))
         self.title_text.setMaximumHeight(primary.height/20)
         self.title_text.setAlignment(QtCore.Qt.AlignHCenter)
@@ -70,9 +71,11 @@ class Edit_Vehicle_Widget(QFrame):
         self.lane_change_no = QRadioButton()
         self.lane_change_no.setText("No")
         self.lane_change_no.setChecked(True)
+        self.lane_change_no.clicked.connect(self.lane_no_click)
 
         self.lane_change_yes = QRadioButton()
         self.lane_change_yes.setText("Yes")
+        self.lane_change_yes.clicked.connect(self.lane_yes_click)
         
 
         self.lane_change_widget = QWidget()
@@ -90,11 +93,13 @@ class Edit_Vehicle_Widget(QFrame):
         #lane change time
         self.lane_change_time_text = QLabel()
         self.lane_change_time_text.setText("Lane Change Time (s)")
+        self.lane_change_time_text.setDisabled(True)
 
         self.lane_change_time = QTextEdit()
         self.lane_change_time.setMaximumHeight(primary.height/25)
         self.lane_change_time.setMaximumWidth(primary.width/25)
         self.lane_change_time.setAlignment(QtCore.Qt.AlignCenter)
+        self.lane_change_time.setDisabled(True)
 
 
         #safety distance
@@ -182,9 +187,17 @@ class Edit_Vehicle_Widget(QFrame):
 
     def close(self):
         self.hide()
-        self.parent_window.hide()
-        self.parent_window.show()
+        self.parent().hide()
+        self.parent().show()
 
+
+    def lane_no_click(self):
+        self.lane_change_time.setDisabled(True)
+        self.lane_change_time_text.setDisabled(True)
+
+    def lane_yes_click(self):
+        self.lane_change_time.setDisabled(False)
+        self.lane_change_time_text.setDisabled(False)
 
 
 

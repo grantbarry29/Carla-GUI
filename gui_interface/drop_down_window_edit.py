@@ -8,7 +8,7 @@ import gui_test as primary
 
 
 
-class Drop_Down_Window_Edit(QFrame):
+class Drop_Down_Window_Edit(QDialog):
     def __init__(self,lane,parent=None):
         super(Drop_Down_Window_Edit, self).__init__(parent)
         self.parent_window = parent
@@ -21,19 +21,17 @@ class Drop_Down_Window_Edit(QFrame):
         self.setLayout(self.grid)
         self.grid.setContentsMargins(0,0,0,0)
 
-        self.setFrameStyle(1)
-        self.setAutoFillBackground(True)
-
         self.setMinimumHeight(primary.height/3)
         self.setMinimumWidth(primary.width/8)
         self.setMaximumHeight(primary.height/3)
         self.setMaximumWidth(primary.width/8)
 
+        """
         #close button
         self.close_button = QPushButton()
         self.close_button.setText("Close")
         self.close_button.clicked.connect(self.close)
-
+        """
 
         #subject lane lists
         self.subject_labels = list()
@@ -73,10 +71,6 @@ class Drop_Down_Window_Edit(QFrame):
 
         
 
-
-
-        #GRID SETTINGS
-        self.grid.addWidget(self.close_button, 0,0,1,2)
 
 
 

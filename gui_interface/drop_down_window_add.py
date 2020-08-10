@@ -8,21 +8,18 @@ import gui_test as primary
 
 
 
-class Drop_Down_Window_Add(QFrame):
+class Drop_Down_Window_Add(QDialog):
     def __init__(self,lane,parent=None):
         super(Drop_Down_Window_Add, self).__init__(parent)
         self.parent_window = parent
         self.lane = lane
         self.initUI()
 
-
     def initUI(self):
         self.grid = QGridLayout()
         self.setLayout(self.grid)
         self.grid.setContentsMargins(0,0,0,0)
 
-        self.setFrameStyle(1)
-        self.setAutoFillBackground(True)
 
         self.setMinimumHeight(primary.height/3)
         self.setMinimumWidth(primary.width/8)
@@ -113,15 +110,15 @@ class Drop_Down_Window_Add(QFrame):
 
 
         #GRID SETTINGS
-        self.grid.addWidget(self.close_button, 0,0,1,2)
+        #self.grid.addWidget(self.close_button, 0,0,1,2)
         self.grid.addWidget(self.gap_text, 1,0,1,1)
         self.grid.addWidget(self.gap, 1,1,1,1)
         self.grid.addWidget(self.vehicle_model_text, 2,0,1,1)
         self.grid.addWidget(self.vehicle_model, 2,1,1,1)
         self.grid.addWidget(self.vehicle_type_text, 3,0,1,1)
         self.grid.addWidget(self.vehicle_type, 3,1,1,1)
-        self.grid.addWidget(self.vehicle_color_text, 4,0,1,1)
-        self.grid.addWidget(self.vehicle_color, 4,1,1,1)
+        #self.grid.addWidget(self.vehicle_color_text, 4,0,1,1)
+        #self.grid.addWidget(self.vehicle_color, 4,1,1,1)
         self.grid.addWidget(self.add_button, 5,0,1,2)
         
 

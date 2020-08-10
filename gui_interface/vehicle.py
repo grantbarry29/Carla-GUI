@@ -22,6 +22,8 @@ class Vehicle(QLabel):
 
 
     def initUI(self):
+        self.length = primary.height/22
+        self.width = primary.width/65
         self.setMinimumHeight(primary.height/22)
         self.setMinimumWidth(primary.width/65)
         self.setMaximumHeight(primary.height/22)
