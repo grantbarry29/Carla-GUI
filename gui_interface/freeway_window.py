@@ -3,7 +3,6 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QFont, QPixmap
 from functools import partial
-import tkinter as tk
 import sys
 import edit_section
 import section_vector
@@ -11,8 +10,29 @@ import add_vehicles
 import vehicle
 import edit_vehicle
 import edit_vehicle_ego
-
+import carla_vehicle_list
+import start_sim_pop_up
+import back_home_pop_up
 import gui_test as primary
+
+import glob
+import os
+import sys
+
+try:
+    sys.path.append(glob.glob('../carla/dist/carla-*%d.%d-%s.egg' % (
+        sys.version_info.major,
+        sys.version_info.minor,
+        'win-amd64' if os.name == 'nt' else 'linux-x86_64'))[0])
+except IndexError:
+    pass
+
+import carla
+import time
+
+from backend.carla_env import CARLA_ENV
+from backend.section_environment import FreewayEnv
+
 
 class ExtendedQLabel(QLabel):
     def __init__(self, parent):
@@ -33,13 +53,6 @@ class Freeway_Window(QMainWindow):
 
 
     def initUI(self):
-        """
-        self.main_widget = QWidget() #widget for general settings page
-        self.grid = QGridLayout() #set grid to layout for general settings
-        self.main_widget.setLayout(self.grid)
-        self.setCentralWidget(self.main_widget) #set freeway window central_widget to main_widget
-        """
-
         self.stack = QStackedLayout()
         self.main_widget = QWidget()
         self.main_widget.setLayout(self.stack)
@@ -56,10 +69,11 @@ class Freeway_Window(QMainWindow):
         #back button
         self.back_button = QPushButton()
         self.back_button.setText("Back to Start")
-        self.back_button.clicked.connect(self.back_to_start)
         self.back_button.setFont(QFont("Arial", 18))
         self.back_button.setMaximumWidth(primary.width/10)
         self.back_button.setMaximumHeight(primary.height/26)
+        self.back_button.clicked.connect(self.show_back_button_pop_up)
+        
 
 
         #General Settings text
@@ -69,21 +83,6 @@ class Freeway_Window(QMainWindow):
         self.general_settings.setAlignment(QtCore.Qt.AlignCenter)
         self.general_settings.setMaximumHeight(primary.height/10)
 
-
-        #Number of Freeway Sections
-        self.num_sections_text = QLabel()
-        self.num_sections_text.setText("Number of Freeway Sections")
-        self.num_sections_text.setFont(QFont("Arial", 18))
-        self.num_sections_text.setMinimumWidth(primary.width/4) #controls dist between input boxes and input text
-
-        self.num_sections = QTextEdit()
-        self.num_sections.setMaximumHeight(primary.height/20)
-        self.num_sections.setMaximumWidth(primary.height/20)
-        self.num_sections.setMinimumHeight(primary.height/20)
-        self.num_sections.setMinimumWidth(primary.height/20)
-        self.num_sections.textChanged.connect(self.validate_input)
-        self.num_sections.textChanged.connect(self.double_right)
-        self.num_sections.setPlaceholderText("7")
 
 
 
@@ -95,10 +94,28 @@ class Freeway_Window(QMainWindow):
 
         self.allow_collisions = QCheckBox()
         self.allow_collisions.setChecked(True)
-        self.allow_collisions.setMaximumHeight(primary.height/20)
-        self.allow_collisions.setMaximumWidth(primary.height/20)
-        self.allow_collisions.setMinimumHeight(primary.height/20)
-        self.allow_collisions.setMinimumWidth(primary.height/20)
+        size_val = str(primary.height/20)
+        self.allow_collisions.setStyleSheet("QCheckBox::indicator { width: %spx; height: %spx;}" % (size_val,size_val))
+
+
+
+        #Number of Freeway Sections
+        self.num_sections_text = QLabel()
+        self.num_sections_text.setText("Number of Freeway Sections")
+        self.num_sections_text.setFont(QFont("Arial", 18))
+        self.num_sections_text.setMinimumWidth(primary.width/4) #controls dist between input boxes and input text
+
+        self.num_sections = QSpinBox()
+        self.num_sections.setMaximumHeight(primary.height/20)
+        self.num_sections.setMaximumWidth(primary.height/20)
+        self.num_sections.setMinimumHeight(primary.height/20)
+        self.num_sections.setMinimumWidth(primary.height/20)
+        self.num_sections.setValue(0)
+        self.num_sections.setMinimum(1)
+        self.num_sections.setMaximum(7)
+        self.num_sections.valueChanged.connect(self.validate_input_num_sections)
+
+
 
 
         #Min Speed
@@ -106,12 +123,15 @@ class Freeway_Window(QMainWindow):
         self.min_speed_text.setText("Minimum Speed (km/h)")
         self.min_speed_text.setFont(QFont("Arial", 18))
 
-        self.min_speed = QTextEdit()
+        self.min_speed = QSpinBox()
         self.min_speed.setMaximumHeight(primary.height/20)
         self.min_speed.setMaximumWidth(primary.height/20)
         self.min_speed.setMinimumHeight(primary.height/20)
         self.min_speed.setMinimumWidth(primary.height/20)
-        self.min_speed.setText("54")
+        self.min_speed.setMinimum(0)
+        self.min_speed.setValue(50)
+        self.min_speed.valueChanged.connect(self.validate_input_speed)
+        self.min_speed.textChanged.connect(self.validate_input_speed)
 
 
         #Max Speed
@@ -119,13 +139,17 @@ class Freeway_Window(QMainWindow):
         self.max_speed_text.setText("Maximum Speed (km/h)")
         self.max_speed_text.setFont(QFont("Arial", 18))
 
-        self.max_speed = QTextEdit()
+        self.max_speed = QSpinBox()
         self.max_speed.setMaximumHeight(primary.height/20)
         self.max_speed.setMaximumWidth(primary.height/20)
         self.max_speed.setMinimumHeight(primary.height/20)
         self.max_speed.setMinimumWidth(primary.height/20)
-        self.max_speed.setText("108")
-
+        self.max_speed.setMinimum(self.min_speed.value())
+        self.max_speed.setMaximum(150)
+        self.max_speed.setValue(100)
+        self.max_speed.valueChanged.connect(self.validate_input_speed)
+        self.max_speed.textChanged.connect(self.validate_input_speed)
+        self.min_speed.setMaximum(self.max_speed.value())
 
 
         #Safety Distance
@@ -133,12 +157,14 @@ class Freeway_Window(QMainWindow):
         self.safety_distance_text.setText("Safety Distance (m)")
         self.safety_distance_text.setFont(QFont("Arial", 18))
 
-        self.safety_distance = QTextEdit()
+        self.safety_distance = QSpinBox()
         self.safety_distance.setMaximumHeight(primary.height/20)
         self.safety_distance.setMaximumWidth(primary.height/20)
         self.safety_distance.setMinimumHeight(primary.height/20)
         self.safety_distance.setMinimumWidth(primary.height/20)
-        self.safety_distance.setText("15")
+        self.safety_distance.setValue(15)
+        self.safety_distance.setMinimum(5)
+        self.safety_distance.setMaximum(999)
 
 
 
@@ -149,7 +175,7 @@ class Freeway_Window(QMainWindow):
         self.start_simulation.setFont(QFont("Arial", 14))
         self.start_simulation.setMaximumWidth(primary.width/6)
         self.start_simulation.setMinimumHeight(primary.height/25)
-        self.start_simulation.clicked.connect(self.gather)
+        self.start_simulation.clicked.connect(self.show_start_sim_pop_up)
 
 
 
@@ -158,17 +184,17 @@ class Freeway_Window(QMainWindow):
 
             #widget
         self.map_widget = QWidget()
-        self.map_widget.setMinimumWidth(primary.width/2.1)
-        self.map_widget.setMinimumHeight(primary.height/2.5)
+        self.map_widget.setMinimumWidth(primary.width/2.03)
+        self.map_widget.setMinimumHeight(primary.height/2.1)
 
             #background color
         self.map_background = QLabel(self.map_widget)
         self.map_background.setStyleSheet("background-color: #cccac6;")
-        self.map_background.setMinimumHeight(primary.height/2.25)
+        self.map_background.setMinimumHeight(primary.height/2.15)
         self.map_background.setMinimumWidth(primary.width/2.75)
 
             #maps
-        self.pixmap = QPixmap('road.gif')
+        self.pixmap = QPixmap('images/road.gif')
         self.pixmap = self.pixmap.scaledToHeight(primary.height/2.5)
 
         self.map1 = QLabel(self.map_widget)
@@ -183,10 +209,10 @@ class Freeway_Window(QMainWindow):
         self.map5.setPixmap(self.pixmap)
 
             #arrows
-        self.arrow_pixmap = QPixmap('next.png')
+        self.arrow_pixmap = QPixmap('images/next.png')
         self.arrow_pixmap = self.arrow_pixmap.scaledToHeight(primary.height/12)
         self.arrow_pixmap_left = self.arrow_pixmap.transformed(QtGui.QTransform().scale(-1,1))
-        self.double_arrow_pixmap = QPixmap('double_next.png')
+        self.double_arrow_pixmap = QPixmap('images/double_next.png')
         self.double_arrow_pixmap = self.double_arrow_pixmap.scaledToHeight(primary.height/12)
         self.double_arrow_pixmap_left = self.double_arrow_pixmap.transformed(QtGui.QTransform().scale(-1,1))
 
@@ -206,7 +232,7 @@ class Freeway_Window(QMainWindow):
 
 
             #road buttons
-        self.road_array = ["-","-","-","-","-"]
+        self.road_array = ["-","-","-","-","1"]
 
         self.road_button1 = QPushButton(self.map_widget)
         self.road_button1.setMaximumWidth(primary.width/30)
@@ -260,11 +286,21 @@ class Freeway_Window(QMainWindow):
         self.add_vehicles_widget = add_vehicles.Add_Vehicles_Window(self,self)
         self.add_vehicles_widget.hide()
 
+
         #EDIT EGO VEHICLE
         self.edit_ego_vehicle = edit_vehicle_ego.Edit_Vehicle_Ego_Widget(self)
         self.edit_ego_vehicle.hide()
 
 
+        #START SIM POP UP
+        self.start_sim_pop_up = start_sim_pop_up.Start_Sim_Pop_Up(self)
+        self.start_sim_pop_up.move(primary.width/2.3,primary.height/2.3)
+        self.start_sim_pop_up.hide()
+
+        #BACK BUTTON POP UP
+        self.back_button_pop_up = back_home_pop_up.Back_Home_Pop_Up(self)
+        self.back_button_pop_up.move(primary.width/2.3,primary.height/2.3)
+        self.back_button_pop_up.hide()
 
 
 
@@ -275,8 +311,8 @@ class Freeway_Window(QMainWindow):
         self.grid.addWidget(self.general_settings,     1,0,1,1)
         self.grid.addWidget(self.allow_collisions_text,2,0,1,1)
         self.grid.addWidget(self.num_sections_text,    3,0,1,1)
-        self.grid.addWidget(self.min_speed_text,       4,0,1,1)
-        self.grid.addWidget(self.max_speed_text,       5,0,1,1)
+        self.grid.addWidget(self.max_speed_text,       4,0,1,1)
+        self.grid.addWidget(self.min_speed_text,       5,0,1,1)
         self.grid.addWidget(self.safety_distance_text, 6,0,1,1)
         #self.grid.addWidget(self.edit_simulation,      7,0,1,1)
         self.grid.addWidget(self.start_simulation,     7,0,1,1)
@@ -284,9 +320,10 @@ class Freeway_Window(QMainWindow):
             #input boxes
         self.grid.addWidget(self.allow_collisions,     2,1,1,1)
         self.grid.addWidget(self.num_sections,         3,1,1,1)
-        self.grid.addWidget(self.min_speed,            4,1,1,1)
-        self.grid.addWidget(self.max_speed,            5,1,1,1)
+        self.grid.addWidget(self.max_speed,            4,1,1,1)
+        self.grid.addWidget(self.min_speed,            5,1,1,1)
         self.grid.addWidget(self.safety_distance,      6,1,1,1)
+    
 
 
 
@@ -316,6 +353,13 @@ class Freeway_Window(QMainWindow):
 
 
 
+    def show_back_button_pop_up(self):
+        self.back_button_pop_up.show()
+
+
+    def show_start_sim_pop_up(self):
+        self.start_sim_pop_up.show()
+
     def show_add_vehicles(self):
         self.add_vehicles_widget.show()
         
@@ -338,6 +382,7 @@ class Freeway_Window(QMainWindow):
             return
         else:
             index = int(index)
+        self.num_sections.setDisabled(True)
         self.vec_populate()
         QtWidgets.QStackedLayout.setCurrentWidget(self.stack,section_vector.page_list[index])
         section_vector.page_list[index].section_id.setCurrentText("Section {}".format(index))
@@ -381,11 +426,8 @@ class Freeway_Window(QMainWindow):
     def single_right(self):
         if self.road_array[0] == "-":
             return
-        if self.num_sections.toPlainText() == "":
-            val = "-"
-        else:
-            val = int(self.num_sections.toPlainText())
 
+        val = self.num_sections.value()
         if self.road_array[-1] == val:
             return
 
@@ -409,10 +451,7 @@ class Freeway_Window(QMainWindow):
 
 
     def double_right(self):
-        if self.num_sections.toPlainText() == "":
-            val = 0
-        else:
-            val = int(self.num_sections.toPlainText())
+        val = self.num_sections.value()
 
         if self.road_array[-1] == val:
             return
@@ -429,7 +468,7 @@ class Freeway_Window(QMainWindow):
     
     def back_to_start(self):
         if self.stack.count() > 1:
-            for i in range(0,int(self.num_sections.toPlainText())):
+            for i in range(0,int(self.num_sections.value())):
                 self.stack.widget(i).destroy()
         section_vector.page_list.clear()
         self.new = primary.Start_Window()
@@ -455,10 +494,10 @@ class Freeway_Window(QMainWindow):
 
 
     def vec_populate(self): 
-        if self.num_sections.toPlainText() == "":
+        if self.num_sections.value() == "":
             val = 0
         else:
-            val = int(self.num_sections.toPlainText())
+            val = int(self.num_sections.value())
 
         if val == len(section_vector.page_list)-1:
             return
@@ -470,11 +509,6 @@ class Freeway_Window(QMainWindow):
             for i in section_vector.page_list:
                 self.stack.addWidget(i)
         
-            """for k in range(1,start_len):
-                for j in range(start_len,len(section_vector.page_list)-1):
-                    section_vector.page_list[k].section_id.addItem("Section {}".format(j+1))"""
-
-
             
 
         if val < len(section_vector.page_list)-1:
@@ -496,26 +530,35 @@ class Freeway_Window(QMainWindow):
         
 
         
+    
+    def validate_input_num_sections(self):
+        val = self.num_sections.value()
 
-    def validate_input(self):
-        text = self.num_sections.toPlainText()
+        j = 4
+        for i in range(0,5):
+            self.road_array[i] = val - j
+            j = j - 1
+            if val - j <= 1:
+                self.road_array[i] = '-'
 
-        if text == "":
-            return
-
-        if text.isdigit() == False:
-            self.num_sections.setText("")
+        self.road_button_reset()
+    
         
-        if int(text) > 100:
-            self.num_sections.setText("100")
 
+    
+    def validate_input_speed(self):
+        upper_bound = self.max_speed.value()
+        lower_bound = self.min_speed.value()
+        self.min_speed.setMaximum(upper_bound)
+        self.max_speed.setMinimum(lower_bound)
+
+    
 
 
     def copy_map_to_sections(self):
 
-        #connect to edit sections click
         car_attribute_list = list()
-        for widget in self.add_vehicles_widget.map_widget.children():
+        for widget in self.add_vehicles_widget.map_background.children():
             if widget.objectName() == "car":
                 lane = widget.lane
                 lead = widget.lead
@@ -538,7 +581,7 @@ class Freeway_Window(QMainWindow):
             for settings in car_attribute_list:
                 gap = int(settings[2])
                 car_copy = vehicle.Vehicle(settings[0],settings[1],settings[2],settings[3],settings[4],settings[5],settings[6])
-                car_copy.setParent(section_vector.page_list[i].map_widget)
+                car_copy.setParent(section_vector.page_list[i].map_background)
 
 
                 self.left_follow_gaps = self.add_vehicles_widget.left_follow_gaps
@@ -546,33 +589,38 @@ class Freeway_Window(QMainWindow):
                 self.left_lead_gaps = self.add_vehicles_widget.left_lead_gaps
                 self.subject_lead_gaps = self.add_vehicles_widget.subject_lead_gaps
 
+                placement_reference = section_vector.page_list[i].map_background.width() 
+
                 if car_copy.lead == 0:
                     if car_copy.lane == "subject":
-                        car_copy.move(primary.width/3.745, self.subject_lead_gaps[subject_lead_count])
+                        car_copy.move(placement_reference/1.48, self.subject_lead_gaps[subject_lead_count])
                         subject_lead_count += 1
                     else:
-                        car_copy.move(primary.width/4.05, self.left_lead_gaps[left_lead_count])
+                        car_copy.move(placement_reference/1.77, self.left_lead_gaps[left_lead_count])
                         left_lead_count += 1
 
                 else:
                     if car_copy.lane == "subject":
-                        car_copy.move(primary.width/3.745, self.subject_follow_gaps[subject_follow_count])
+                        car_copy.move(placement_reference/1.48, self.subject_follow_gaps[subject_follow_count])
                         subject_follow_count += 1
                     else:
-                        car_copy.move(primary.width/4.05, self.left_follow_gaps[left_follow_count])
+                        car_copy.move(placement_reference/1.77, self.left_follow_gaps[left_follow_count])
                         left_follow_count += 1
                 
 
-                car_copy.clicked.connect(partial(self.do,i,z-1) )    
+                car_copy.clicked.connect(partial(self.car_click,i,z-1) )    
                 car_copy.setObjectName("car")
                 car_copy.setText(str(z))
                 z+=1
                 car_copy.show()
+                car_copy.raise_()
+
+
 
     def add_vehicle_edit_windows(self):
 
         car_count = 0
-        for widget in self.add_vehicles_widget.map_widget.children():
+        for widget in self.add_vehicles_widget.map_background.children():
             if widget.objectName() == "car":
                 car_count += 1
 
@@ -582,22 +630,23 @@ class Freeway_Window(QMainWindow):
                 edit_car.setParent(section_vector.page_list[page])
                 edit_car.car_index = car_index
                 edit_car.setObjectName("edit")
-                edit_car.safety_distance.setText(self.safety_distance.toPlainText())  
+                edit_car.safety_distance.setValue(self.safety_distance.value()) 
                 edit_car.hide()
                 section_vector.page_list[page].edit_vehicle_list.append(edit_car)
 
 
-    def do(self,page_index,car_index):
+    def car_click(self,page_index,car_index):
         section_vector.page_list[page_index].edit_vehicle_list[car_index].show()
         section_vector.page_list[page_index].edit_vehicle_list[car_index].raise_()
 
+
     
     def gather(self):
-        number_freeway_sections = self.num_sections.toPlainText()
+        number_freeway_sections = self.num_sections.value()
         allow_collisions = self.allow_collisions.isChecked()
-        minimum_speed = self.min_speed.toPlainText()
-        max_speed = self.max_speed.toPlainText()
-        safety_distance = self.safety_distance.toPlainText()
+        minimum_speed = self.min_speed.value()
+        max_speed = self.max_speed.value()
+        safety_distance = self.safety_distance.value()
 
 
 
@@ -667,7 +716,118 @@ class Freeway_Window(QMainWindow):
 
 
 
+    def run(self):
 
+        #general settings
+        number_freeway_sections = self.num_sections.value()
+        allow_collisions = self.allow_collisions.isChecked()
+        minimum_speed = self.min_speed.value()
+        max_speed = self.max_speed.value()
+        safety_dist = self.safety_distance.value()
+        view = self.start_sim_pop_up.choose_view.currentIndex()
+
+        #ego vehicle settings
+        ego_model = carla_vehicle_list.vehicle_list[self.edit_ego_vehicle.vehicle_model.currentText()]
+        color_r = self.edit_ego_vehicle.vehicle_color_r.value()
+        color_g = self.edit_ego_vehicle.vehicle_color_g.value()
+        color_b = self.edit_ego_vehicle.vehicle_color_b.value()
+        ego_color_input = "{},{},{}".format(color_r,color_g,color_b)
+        ego_safety_distance = self.edit_ego_vehicle.safety_distance.value()
+
+        #subject lane vehicle settings
+        subject_cars = list()
+        for i in self.add_vehicles_widget.subject_vehicle_list:
+            if i.lead == True:
+                lead_string = "follow"
+            else:
+                lead_string = "lead"
+            model = carla_vehicle_list.vehicle_list[i.model]
+            data = tuple((i.gap,model,lead_string,i.color_r,i.color_g,i.color_b))
+            subject_cars.append(data)
+
+        #left lane vehicle settings
+        left_cars = list()
+        for i in self.add_vehicles_widget.left_vehicle_list:
+            if i.lead == True:
+                lead_string = "follow"
+            else:
+                lead_string = "lead"
+            model = carla_vehicle_list.vehicle_list[i.model]
+            data = tuple((i.gap,model,lead_string,i.color_r,i.color_g,i.color_b))
+            left_cars.append(data)
+
+
+        """ work in progress
+        #subject lane behavior settings
+        for i in range(1,len(section_vector.page_list)):
+            print("\n--Section {}--".format(i))
+            for j in section_vector.page_list[i].edit_vehicle_list:
+                #car_position = j.position
+                #car_command = 
+                print("Lane Change:", j.lane_change_yes.isChecked())
+                if j.lane_change_yes.isChecked():
+                    print("Lane Change Time:", j.lane_change_time.toPlainText())
+                print("Safety Distance:", j.safety_distance.toPlainText())
+                if j.vehicle_color_r.toPlainText() == "":
+                    print("Color: Default")
+                else:
+                    print("Color: ({},{},{})".format(j.vehicle_color_r.toPlainText(),j.vehicle_color_g.toPlainText(),j.vehicle_color_b.toPlainText()))
+        """
+
+        
+        try:
+            client = carla.Client("localhost",2000)
+            client.set_timeout(10.0)
+            world = client.load_world('Town04')
+
+            weather = carla.WeatherParameters(
+            cloudiness = 10.0,
+            precipitation=0.0,
+            sun_altitude_angle=90.0)
+            world.set_weather(weather)
+
+            spectator = world.get_spectator()
+            spectator.set_transform(carla.Transform(carla.Location(x=-170, y=-151, z=116.5), carla.Rotation(pitch=-33, yaw= 56.9, roll=0.0)))   
+
+            env = CARLA_ENV(world)
+            time.sleep(10)
+
+            freewayenv = FreewayEnv(env,number_freeway_sections) 
+
+            #ego vehicle
+            freewayenv.add_ego_vehicle()
+            freewayenv.edit_ego_vehicle(
+                vehicle_color =ego_color_input,
+                safety_distance=ego_safety_distance,
+                model_name=ego_model)
+
+
+            #subject lane vehicles
+            for car in subject_cars:
+                color = ("{},{},{}".format(car[3],car[4],car[5]))
+                subject_car = freewayenv.add_full_path_vehicle(gap = car[0], model_name=car[1], vehicle_type = car[2], 
+                                                                choice = "subject",vehicle_color=color)
+
+            #left lane vehicles
+            for car in left_cars:
+                color = ("{},{},{}".format(car[3],car[4],car[5]))
+                left_car = freewayenv.add_full_path_vehicle(gap = car[0], model_name=car[1], vehicle_type = car[2], 
+                                                            choice = "left", vehicle_color=color)
+
+            freewayenv.edit_normal_section_setting(2,"lead","subject",0,command="lane",command_start_time=0)
+            #freewayenv.edit_normal_section_setting(2,"lead","subject",0,command="distance",command_start_time=3)
+
+            if view == 0:
+                spec_mode = "first_person"
+            else:
+                spec_mode = None
+            freewayenv.SectionBackend(spectator_mode=spec_mode,allow_collision=allow_collisions)
+
+        finally:
+            time.sleep(10)
+            env.destroy_actors()
+        
+            
 
 
 

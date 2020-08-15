@@ -1,17 +1,15 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QFont, QPixmap
-import tkinter as tk
 import sys
 import freeway_window as Fway
 import intersection_window as Inter
 
 
-#retrieve user's window size and set as dimendions
-root = tk.Tk()
-width = root.winfo_screenwidth()
-height = root.winfo_screenheight()
-root.destroy()
+app = QtWidgets.QApplication(sys.argv)
+screen = app.primaryScreen()
+width = screen.size().width()
+height = screen.size().height()
 
 
 class Start_Window(QMainWindow):

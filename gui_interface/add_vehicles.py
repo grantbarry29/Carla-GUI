@@ -2,7 +2,6 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QFont, QPixmap
-import tkinter as tk
 import sys
 import edit_section
 import drop_down_window_add
@@ -50,7 +49,6 @@ class Add_Vehicles_Window(QWidget):
         self.map_widget.setMaximumWidth(primary.width/3)
         self.map_widget.setMinimumHeight(primary.height/1.3)
         self.map_widget.setMaximumHeight(primary.height/1.3)
-        #self.map_widget.setStyleSheet("background-color: yellow;")
         
 
 
@@ -60,22 +58,25 @@ class Add_Vehicles_Window(QWidget):
         self.map_background.setMinimumHeight(primary.height/1.41)
         self.map_background.setMinimumWidth(primary.width/7)
         self.map_background.move( primary.width/26,primary.height/70)
+        self.map_layout = QHBoxLayout()
+        self.map_background.setLayout(self.map_layout)
 
 
         #map
-        self.pixmap = QPixmap('road.gif')
+        self.pixmap = QPixmap('images/road.gif')
         self.pixmap = self.pixmap.scaledToHeight(primary.height/1.5)
 
         self.map1 = QLabel(self.map_widget)
         self.map1.setPixmap(self.pixmap)
-        self.map1.move( int(primary.width/17.5) , int(primary.height/30) )
+        self.map1.setAlignment(QtCore.Qt.AlignCenter)
+        self.map_layout.addWidget(self.map1)
 
 
         #ego vehicle
-        self.ego_vehicle = vehicle.Vehicle(0,1,"","","222","180","55",self.map_widget)
+        self.ego_vehicle = vehicle.Vehicle(0,1,"","","222","180","55",self.map_background)
         self.ego_vehicle.setText("Ego")
         self.ego_vehicle.setFont(QFont("Arial", 10))
-        self.ego_vehicle.move(primary.width/7.27,primary.height/2.98)
+        self.ego_vehicle.move(self.map_background.width()/1.48,primary.height/2.98)
 
 
 
@@ -143,15 +144,6 @@ class Add_Vehicles_Window(QWidget):
         self.subject_lane_add_vehicle.move(primary.width/6,primary.height/5)
         self.subject_lane_add_vehicle.clicked.connect(self.add_vehicle_subject_lane_click)
 
-        """
-                #edit lane
-        self.subject_lane_edit_lane = QPushButton(self.add_vehicles_widget)
-        self.subject_lane_edit_lane.setText("Edit Lane")
-        self.subject_lane_edit_lane.setFont(QFont("Arial",16))
-        self.subject_lane_edit_lane.setMinimumWidth(primary.width/10)
-        self.subject_lane_edit_lane.move(primary.width/6,primary.height/4)
-        self.subject_lane_edit_lane.clicked.connect(self.edit_subject_lane_click)
-        """
 
 
             #left lane
@@ -171,17 +163,6 @@ class Add_Vehicles_Window(QWidget):
         self.left_lane_add_vehicle.setMinimumWidth(primary.width/10)
         self.left_lane_add_vehicle.move(primary.width/6,primary.height/2.5)
         self.left_lane_add_vehicle.clicked.connect(self.add_vehicle_left_lane_click)
-
-        """
-                #edit lane
-        self.left_lane_edit_lane = QPushButton(self.add_vehicles_widget)
-        self.left_lane_edit_lane.setText("Edit Lane")
-        self.left_lane_edit_lane.setFont(QFont("Arial",16))
-        self.left_lane_edit_lane.setMinimumWidth(primary.width/10)
-        self.left_lane_edit_lane.move(primary.width/6,primary.height/2.2)
-        self.left_lane_edit_lane.clicked.connect(self.edit_left_lane_click)
-        """
-
 
 
 
@@ -206,16 +187,14 @@ class Add_Vehicles_Window(QWidget):
     
 
 
-
     def add_vehicles_clicked(self):
-        #self.add_vehicles_widget.setHidden(False)
         self.add_vehicles_widget.raise_()
 
 
     def hide_add_vehicles(self):
         self.add_vehicles_widget.hide()
-        self.freeway_window.go_to_general_settings()
-        self.go_to_page()
+        #self.freeway_window.go_to_general_settings()
+        #self.go_to_page()
 
     def add_vehicle_subject_lane_click(self):
         self.add_widget_subject = drop_down_window_add.Drop_Down_Window_Add("subject",self)
@@ -229,8 +208,6 @@ class Add_Vehicles_Window(QWidget):
 
         self.add_widget_left.show()
         self.add_widget_left.move(primary.width/6,primary.height/2.5)
-        #self.subject_lane_add_vehicle.setEnabled(False)
-        #self.subject_lane_edit_lane.setEnabled(False)
 
 
     def edit_subject_lane_click(self):
@@ -238,7 +215,6 @@ class Add_Vehicles_Window(QWidget):
 
         self.edit_widget_subject.show()
         self.edit_widget_subject.move(primary.width/6,primary.height/3.35)
-        #self.subject_lane_add_vehicle.setEnabled(False)
 
 
     def edit_left_lane_click(self):
@@ -246,40 +222,70 @@ class Add_Vehicles_Window(QWidget):
 
         self.edit_widget_left.show()
         self.edit_widget_left.move(primary.width/6,primary.height/2.2)
-        #self.subject_lane_add_vehicle.setEnabled(False)
-        #self.subject_lane_edit_lane.setEnabled(False)
-        #self.left_lane_add_vehicle.setEnabled(False)
 
 
     #adds vehicle to subject lane
     def add_vehicle_subject(self):
 
-        gap = self.add_widget_subject.gap.toPlainText()
+        gap = self.add_widget_subject.gap.value()
         gap = int(gap)
         lead_follow = self.add_widget_subject.vehicle_type.currentIndex()
-        color_r = self.add_widget_subject.vehicle_color_r.toPlainText()
-        color_g = self.add_widget_subject.vehicle_color_g.toPlainText()
-        color_b = self.add_widget_subject.vehicle_color_b.toPlainText()
+        color_r = self.add_widget_subject.vehicle_color_r.value()
+        color_g = self.add_widget_subject.vehicle_color_g.value()
+        color_b = self.add_widget_subject.vehicle_color_b.value()
         model = self.add_widget_subject.vehicle_model.currentText()
         
         
-        self.car = vehicle.Vehicle("subject",lead_follow,gap,model,color_r,color_g,color_b,self.map_widget)
+        self.car = vehicle.Vehicle("subject",lead_follow,gap,model,color_r,color_g,color_b,self.map_background)
+
+        top_of_map = self.car.height()/2
+        bottom_of_map = self.map_background.height() - (self.car.height() * 1.5)
+
         
         if lead_follow == 1: #if follow vehicle
             if not self.subject_follow_gaps: #if no cars in subject follow lane
-                self.car.move(primary.width/7.27,primary.height/3.1 + self.car.length + gap*8)
-                self.subject_follow_gaps.append(primary.height/3.1 + self.car.length + gap*8)
+                car_placement = primary.height/3.1 + self.car.length + gap*8
+                if car_placement > bottom_of_map:
+                    return
+
+                self.car.move(self.map_background.width()/1.48,car_placement)
+                self.subject_follow_gaps.append(car_placement)
+                self.position = 0
+
             else:
-                self.car.move(primary.width/7.27,self.subject_follow_gaps[-1] + self.car.length + gap*5)
-                self.subject_follow_gaps.append(self.subject_follow_gaps[-1] + self.car.length+ gap*5)
+                if len(self.subject_follow_gaps) == 2: #only allow 2 vehicles per lane
+                    return
+                else:
+                    car_placement = self.subject_follow_gaps[-1] + self.car.length + gap*5
+                    if car_placement > bottom_of_map:
+                        return
+
+                    self.car.move(self.map_background.width()/1.48,car_placement)
+                    self.subject_follow_gaps.append(car_placement)
+                    self.position = 1
+
 
         else: #if lead vehicle
             if not self.subject_lead_gaps: #if no cars in subject lead lane
-                self.car.move(primary.width/7.27,primary.height/3.1 - self.car.length/2 - gap*8)
-                self.subject_lead_gaps.append(primary.height/3.1 - self.car.length/2 - gap*8)
+                car_placement = primary.height/3.1 - self.car.length/2 - gap*8
+                if car_placement < top_of_map:
+                    return
+
+                self.car.move(self.map_background.width()/1.48, car_placement)
+                self.subject_lead_gaps.append(car_placement)
+                self.position = 0
+
             else:
-                self.car.move(primary.width/7.27,self.subject_lead_gaps[-1] - self.car.length - gap*5)
-                self.subject_lead_gaps.append(self.subject_lead_gaps[-1] - self.car.length - gap*5)
+                if len(self.subject_lead_gaps) == 2: #only allow 2 vehicles per lane
+                    return
+                else:
+                    car_placement = self.subject_lead_gaps[-1] - self.car.length - gap*5
+                    if car_placement < top_of_map:
+                        return
+
+                    self.car.move(self.map_background.width()/1.48, car_placement)
+                    self.subject_lead_gaps.append(car_placement)
+                    self.position = 1
 
 
         self.subject_vehicle_list.append(self.car)
@@ -291,32 +297,59 @@ class Add_Vehicles_Window(QWidget):
     def add_vehicle_left(self):
         
 
-        gap = self.add_widget_left.gap.toPlainText()
+        gap = self.add_widget_left.gap.value()
         gap = int(gap)
         lead_follow = self.add_widget_left.vehicle_type.currentIndex()
-        color_r = self.add_widget_left.vehicle_color_r.toPlainText()
-        color_g = self.add_widget_left.vehicle_color_g.toPlainText()
-        color_b = self.add_widget_left.vehicle_color_b.toPlainText()
+        color_r = self.add_widget_left.vehicle_color_r.value()
+        color_g = self.add_widget_left.vehicle_color_g.value()
+        color_b = self.add_widget_left.vehicle_color_b.value()
         model = self.add_widget_left.vehicle_model.currentText()
         
         
-        self.car = vehicle.Vehicle("left",lead_follow,gap,model,color_r,color_g,color_b,self.map_widget)
-        
+        self.car = vehicle.Vehicle("left",lead_follow,gap,model,color_r,color_g,color_b,self.map_background)
+
+        top_of_map = self.car.height()/2
+        bottom_of_map = self.map_background.height() - (self.car.height() * 1.5)
+
+
         if lead_follow == 1:
             if not self.left_follow_gaps: #if no cars in subject follow lane
-                self.car.move(primary.width/8.3,primary.height/3.1 + self.car.length + gap*8)
-                self.left_follow_gaps.append(primary.height/3.1 + self.car.length + gap*8)
+                car_placement = primary.height/3.1 + self.car.length + gap*8
+                if car_placement > bottom_of_map:
+                    return
+
+                self.car.move(self.map_background.width()/1.77, car_placement)
+                self.left_follow_gaps.append(car_placement)
             else:
-                self.car.move(primary.width/8.3,self.left_follow_gaps[-1] + self.car.length + gap*5)
-                self.left_follow_gaps.append(self.left_follow_gaps[-1] + self.car.length+ gap*5)
+                if len(self.left_follow_gaps) == 2: #only allow 2 vehicles per lane
+                    return
+                else:
+                    car_placement = self.left_follow_gaps[-1] + self.car.length + gap*5
+                    if car_placement > bottom_of_map:
+                        return
+
+                    self.car.move(self.map_background.width()/1.77,car_placement)
+                    self.left_follow_gaps.append(car_placement)
 
         else:
             if not self.left_lead_gaps: #if no cars in subject lead lane
-                self.car.move(primary.width/8.3,primary.height/3.1 - self.car.length/2 - gap*8)
-                self.left_lead_gaps.append(primary.height/3.1 - self.car.length/2 - gap*8)
+                car_placement = primary.height/3.1 - self.car.length/2 - gap*8
+                if car_placement < top_of_map:
+                    return
+
+                self.car.move(self.map_background.width()/1.77, car_placement)
+                self.left_lead_gaps.append(car_placement)
+
             else:
-                self.car.move(primary.width/8.3,self.left_lead_gaps[-1] - self.car.length - gap*5)
-                self.left_lead_gaps.append(self.left_lead_gaps[-1] - self.car.length - gap*5)
+                if len(self.left_lead_gaps) == 2: #only allow 2 vehicles per lane
+                    return
+                else:
+                    car_placement = self.left_lead_gaps[-1] - self.car.length - gap*5
+                    if car_placement < top_of_map:
+                        return
+
+                    self.car.move(self.map_background.width()/1.77, car_placement)
+                    self.left_lead_gaps.append(car_placement)
 
 
         self.left_vehicle_list.append(self.car)

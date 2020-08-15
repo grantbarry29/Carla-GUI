@@ -5,6 +5,7 @@ from PyQt5.QtGui import QFont, QPixmap
 import edit_section
 import freeway_window
 import gui_test as primary
+import carla_vehicle_list
 
 
 
@@ -18,7 +19,7 @@ class Drop_Down_Window_Add(QDialog):
     def initUI(self):
         self.grid = QGridLayout()
         self.setLayout(self.grid)
-        self.grid.setContentsMargins(0,0,0,0)
+        self.grid.setContentsMargins(0,10,0,0)
 
 
         self.setMinimumHeight(primary.height/3)
@@ -36,11 +37,12 @@ class Drop_Down_Window_Add(QDialog):
         self.gap_text = QLabel()
         self.gap_text.setText("Gap (m)")
 
-        self.gap = QTextEdit()
+        self.gap = QSpinBox()
         self.gap.setMaximumWidth(primary.width/30)
         self.gap.setMaximumHeight(primary.height/30)
         self.gap.setAlignment(QtCore.Qt.AlignCenter)
-        self.gap.setText("10")
+        self.gap.setMinimum(5)
+        self.gap.setValue(10)
 
 
 
@@ -49,8 +51,8 @@ class Drop_Down_Window_Add(QDialog):
         self.vehicle_model_text.setText("Model")
 
         self.vehicle_model = QComboBox()
-        self.vehicle_model.addItem("Tesla Model S")
-        self.vehicle_model.addItem("Audi A2")
+        for vehicle in carla_vehicle_list.vehicle_list:
+            self.vehicle_model.addItem(vehicle)
 
         #vehicle type 
         self.vehicle_type_text = QLabel()
@@ -69,9 +71,9 @@ class Drop_Down_Window_Add(QDialog):
         self.horiz_layout = QHBoxLayout()
         self.vehicle_color.setLayout(self.horiz_layout)
 
-        self.vehicle_color_r = QTextEdit()
-        self.vehicle_color_g = QTextEdit()
-        self.vehicle_color_b = QTextEdit()
+        self.vehicle_color_r = QSpinBox()
+        self.vehicle_color_g = QSpinBox()
+        self.vehicle_color_b = QSpinBox()
 
         self.vehicle_color_r.setAlignment(QtCore.Qt.AlignCenter)
         self.vehicle_color_g.setAlignment(QtCore.Qt.AlignCenter)
@@ -88,9 +90,16 @@ class Drop_Down_Window_Add(QDialog):
         self.vehicle_color_g.setFont(QFont("Arial", 9))
         self.vehicle_color_b.setFont(QFont("Arial", 9))
 
-        self.vehicle_color_r.setText("255")
-        self.vehicle_color_g.setText("255")
-        self.vehicle_color_b.setText("255")
+        self.vehicle_color_r.setMaximum(255)
+        self.vehicle_color_r.setMinimum(0)
+        self.vehicle_color_g.setMaximum(255)
+        self.vehicle_color_g.setMinimum(0)
+        self.vehicle_color_b.setMaximum(255)
+        self.vehicle_color_b.setMinimum(0)
+
+        self.vehicle_color_r.setValue(255)
+        self.vehicle_color_g.setValue(255)
+        self.vehicle_color_b.setValue(255)
 
         self.horiz_layout.addWidget(self.vehicle_color_r)
         self.horiz_layout.addWidget(self.vehicle_color_g)
@@ -117,11 +126,11 @@ class Drop_Down_Window_Add(QDialog):
         self.grid.addWidget(self.vehicle_model, 2,1,1,1)
         self.grid.addWidget(self.vehicle_type_text, 3,0,1,1)
         self.grid.addWidget(self.vehicle_type, 3,1,1,1)
-        #self.grid.addWidget(self.vehicle_color_text, 4,0,1,1)
-        #self.grid.addWidget(self.vehicle_color, 4,1,1,1)
+        self.grid.addWidget(self.vehicle_color_text, 4,0,1,1)
+        self.grid.addWidget(self.vehicle_color, 4,1,1,1)
         self.grid.addWidget(self.add_button, 5,0,1,2)
         
-
+        
 
 
     def close(self):

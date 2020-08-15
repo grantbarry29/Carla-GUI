@@ -5,6 +5,7 @@ from PyQt5.QtGui import QFont, QPixmap
 import freeway_window
 import vehicle
 import add_vehicles
+import section_vector
 
 import gui_test as primary
 
@@ -19,7 +20,7 @@ class Edit_Vehicle_Widget(QFrame):
     def initUI(self):
         self.grid = QGridLayout()
         self.setLayout(self.grid)
-        self.grid.setContentsMargins(0,0,0,0)
+        self.grid.setContentsMargins(15,0,0,0)
 
         self.setFrameStyle(1)
         self.setAutoFillBackground(True)
@@ -95,27 +96,34 @@ class Edit_Vehicle_Widget(QFrame):
         self.lane_change_time_text.setText("Lane Change Time (s)")
         self.lane_change_time_text.setDisabled(True)
 
-        self.lane_change_time = QTextEdit()
+        self.lane_change_time = QSpinBox()
         self.lane_change_time.setMaximumHeight(primary.height/25)
         self.lane_change_time.setMaximumWidth(primary.width/25)
         self.lane_change_time.setAlignment(QtCore.Qt.AlignCenter)
         self.lane_change_time.setDisabled(True)
+        self.lane_change_time.setMinimum(0)
+        self.lane_change_time.setMaximum(10)
+        self.lane_change_time.setValue(5)
 
 
         #safety distance
         self.safety_distance_text = QLabel()
         self.safety_distance_text.setText("Safety Distance (m)")
 
-        self.safety_distance = QTextEdit()
+        self.safety_distance = QSpinBox()
         self.safety_distance.setMaximumHeight(primary.height/25)
         self.safety_distance.setMaximumWidth(primary.width/25)
         self.safety_distance.setAlignment(QtCore.Qt.AlignCenter)
+        self.safety_distance.setMinimum(5)
+        self.safety_distance.setMaximum(999)
+        self.safety_distance.setValue(10)
 
 
         #delete button
         self.delete_button = QPushButton()
         self.delete_button.setText("Delete")
         self.delete_button.setMaximumWidth(primary.width/15)
+        self.delete_button.clicked.connect(self.car_delete)
 
 
         #vehicle color
@@ -160,6 +168,9 @@ class Edit_Vehicle_Widget(QFrame):
         self.spacer.setMaximumHeight(primary.height/15)
         #self.spacer.setStyleSheet("background-color: red;")
 
+        #spacer 2
+        self.spacer2 = QLabel()
+        self.spacer2.setMaximumHeight(primary.height/10)
 
 
         #GRID SETTINGS
@@ -176,9 +187,10 @@ class Edit_Vehicle_Widget(QFrame):
         self.grid.addWidget(self.lane_change_time,         6,1,1,2)
         self.grid.addWidget(self.safety_distance_text,     7,0,1,1)
         self.grid.addWidget(self.safety_distance,          7,1,1,2)
-        self.grid.addWidget(self.vehicle_color_text,       8,0,1,1)
-        self.grid.addWidget(self.vehicle_color,            8,1,1,1)
-        self.grid.addWidget(self.delete_button,            9,0,1,1)
+        #self.grid.addWidget(self.vehicle_color_text,       8,0,1,1)
+        #self.grid.addWidget(self.vehicle_color,            8,1,1,1)
+        self.grid.addWidget(self.delete_button,            8,0,1,1)
+        self.grid.addWidget(self.spacer2,                  9,0,1,1)
         
 
 
@@ -198,6 +210,61 @@ class Edit_Vehicle_Widget(QFrame):
     def lane_yes_click(self):
         self.lane_change_time.setDisabled(False)
         self.lane_change_time_text.setDisabled(False)
+
+
+    def car_delete(self):
+
+        
+        #remove from add_vehicles widget
+        for car in self.parent().freeway_window.add_vehicles_widget.map_background.children():
+            if car.objectName() == "car":
+                if int(car.text()) == self.car_index + 1:
+
+                    if car.lane == "subject":
+                        self.parent().freeway_window.add_vehicles_widget.subject_vehicle_list.pop()
+                        if car.lead == False:
+                            self.parent().freeway_window.add_vehicles_widget.subject_lead_gaps.pop(car.position)
+                        else:
+                            self.parent().freeway_window.add_vehicles_widget.subject_follow_gaps.pop(car.position)
+                    else:
+                        self.parent().freeway_window.add_vehicles_widget.left_vehicle_list.pop()
+                        if car.lead == False:
+                            self.parent().freeway_window.add_vehicles_widget.left_lead_gaps.pop(car.position)
+                        else:
+                            self.parent().freeway_window.add_vehicles_widget.left_follow_gaps.pop(car.position)
+                    
+
+                    car.setParent(None)
+                    car.deleteLater()
+                    car = None
+
+
+        for car in self.parent().freeway_window.add_vehicles_widget.map_background.children():
+            if car.objectName() == "car":
+                if int(car.text()) > self.car_index + 1:
+                    index = int(car.text()) - 1
+                    car.setText(str(index))
+        
+
+        #remove from all edit_sections widgets
+        for page in range(1,len(section_vector.page_list)):
+            for car in section_vector.page_list[page].map_background.children():
+                if car.objectName() == "car":
+                    if int(car.text()) == self.car_index+1:
+                        car.setParent(None)
+                        car.deleteLater()
+                        car = None
+
+        for page in range(1,len(section_vector.page_list)):
+            for car in section_vector.page_list[page].map_background.children():
+                if car.objectName() == "car":
+                    print(car)
+                    if int(car.text()) > self.car_index + 1:
+                        index = int(car.text()) - 1
+                        car.setText(str(index))
+        
+
+        
 
 
 

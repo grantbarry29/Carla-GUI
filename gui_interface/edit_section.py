@@ -61,7 +61,7 @@ class Edit_Section_Window(QWidget):
         self.section_id = QComboBox()
         self.section_id.setFont(QFont("Arial", 16))
         self.section_id.setMaximumWidth(primary.width/9)
-        for i in range(0,int(self.freeway_window.num_sections.toPlainText())):
+        for i in range(0,self.freeway_window.num_sections.value()):
             self.section_id.addItem("Section {}".format(i+1))
         self.section_id.currentIndexChanged.connect(self.go_to_page)
 
@@ -84,7 +84,7 @@ class Edit_Section_Window(QWidget):
         self.import_settings = QComboBox()
         self.import_settings.setFont(QFont("Arial", 16))
         self.import_settings.addItem("Custom (Default)")
-        for i in range(0,int(self.freeway_window.num_sections.toPlainText())):
+        for i in range(0,self.freeway_window.num_sections.value()):
             self.import_settings.addItem("Section {}".format(i+1))
 
         self.view3 = QtWidgets.QListView()
@@ -111,21 +111,25 @@ class Edit_Section_Window(QWidget):
         self.map_background.setMinimumHeight(primary.height/1.41)
         self.map_background.setMinimumWidth(primary.width/7)
         self.map_background.move(primary.width/6,primary.height/200)
+        self.map_layout = QHBoxLayout()
+        self.map_background.setLayout(self.map_layout)
 
-
+    
         #map
-        self.pixmap = QPixmap('road.gif')
+        self.pixmap = QPixmap('images/road.gif')
         self.pixmap = self.pixmap.scaledToHeight(primary.height/1.5)
 
         self.map1 = QLabel(self.map_widget)
         self.map1.setPixmap(self.pixmap)
-        self.map1.move( int(primary.width/5.38) , int(primary.height/40) )
+        self.map_layout.addWidget(self.map1)
+        self.map1.setAlignment(QtCore.Qt.AlignCenter)
+
 
         #ego vehicle
-        self.ego_vehicle = vehicle.Vehicle(0,1,"","","222","180","55",self.map_widget)
+        self.ego_vehicle = vehicle.Vehicle(0,1,"","","222","180","55",self.map_background)
         self.ego_vehicle.setText("Ego")
         self.ego_vehicle.setFont(QFont("Arial", 10))
-        self.ego_vehicle.move(primary.width/3.755,primary.height/3.06)
+        self.ego_vehicle.move(self.map_background.width()/1.48,primary.height/3.06)
         self.ego_vehicle.clicked.connect(self.show_edit_ego_vehicle)
 
 
@@ -165,7 +169,7 @@ class Edit_Section_Window(QWidget):
         self.add_vehicles.clicked.connect(self.freeway_window.show_add_vehicles)
 
         
-
+        
 
 
         #GRID SETTINGS

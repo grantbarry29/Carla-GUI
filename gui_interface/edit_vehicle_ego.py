@@ -5,6 +5,7 @@ from PyQt5.QtGui import QFont, QPixmap
 import freeway_window
 import vehicle
 import add_vehicles
+import carla_vehicle_list
 
 import gui_test as primary
 
@@ -53,8 +54,8 @@ class Edit_Vehicle_Ego_Widget(QFrame):
 
         self.vehicle_model = QComboBox()
         self.vehicle_model.setMaximumWidth(primary.width/6)
-        self.vehicle_model.addItem("Tesla Model S")
-        self.vehicle_model.addItem("Audi A2")
+        for vehicle in carla_vehicle_list.vehicle_list:
+            self.vehicle_model.addItem(vehicle)
         
 
 
@@ -65,11 +66,13 @@ class Edit_Vehicle_Ego_Widget(QFrame):
         self.safety_distance_text.setMinimumWidth(primary.width/9)
         #self.safety_distance_text.setStyleSheet("background-color: red;")
 
-        self.safety_distance = QTextEdit()
+        self.safety_distance = QSpinBox()
         self.safety_distance.setMaximumWidth(primary.width/30)
         self.safety_distance.setMaximumHeight(primary.height/30)
         self.safety_distance.setAlignment(QtCore.Qt.AlignCenter)
-        self.safety_distance.setText("10")
+        self.safety_distance.setValue(10)
+        self.safety_distance.setMinimum(5)
+        self.safety_distance.setMaximum(999)
 
         self.safety_distance_widget = QWidget()
         self.safety_distance_widget.setMaximumHeight(primary.height/10)
@@ -96,9 +99,9 @@ class Edit_Vehicle_Ego_Widget(QFrame):
         self.vehicle_color.setLayout(self.horiz_layout)
         self.vehicle_color.setMaximumHeight(primary.height/12)
 
-        self.vehicle_color_r = QTextEdit()
-        self.vehicle_color_g = QTextEdit()
-        self.vehicle_color_b = QTextEdit()
+        self.vehicle_color_r = QSpinBox()
+        self.vehicle_color_g = QSpinBox()
+        self.vehicle_color_b = QSpinBox()
 
         self.vehicle_color_r.setAlignment(QtCore.Qt.AlignCenter)
         self.vehicle_color_g.setAlignment(QtCore.Qt.AlignCenter)
@@ -115,9 +118,16 @@ class Edit_Vehicle_Ego_Widget(QFrame):
         self.vehicle_color_g.setFont(QFont("Arial", 12))
         self.vehicle_color_b.setFont(QFont("Arial", 12))
 
-        self.vehicle_color_r.setText("255")
-        self.vehicle_color_g.setText("255")
-        self.vehicle_color_b.setText("255")
+        self.vehicle_color_r.setMinimum(0)
+        self.vehicle_color_r.setMaximum(255)
+        self.vehicle_color_g.setMinimum(0)
+        self.vehicle_color_g.setMaximum(255)
+        self.vehicle_color_b.setMinimum(0)
+        self.vehicle_color_b.setMaximum(255)
+
+        self.vehicle_color_r.setValue(255)
+        self.vehicle_color_g.setValue(255)
+        self.vehicle_color_b.setValue(255)
 
         self.horiz_layout.addWidget(self.vehicle_color_r)
         self.horiz_layout.addWidget(self.vehicle_color_g)

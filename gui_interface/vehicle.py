@@ -18,6 +18,7 @@ class Vehicle(QLabel):
         self.color_r = r
         self.color_g = g
         self.color_b = b
+        self.position = -1
         self.initUI()
 
 
