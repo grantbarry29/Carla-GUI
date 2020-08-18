@@ -161,6 +161,19 @@ class Edit_Vehicle_Ego_Widget(QFrame):
 
 
     def close(self):
+        #ego vehicle settings
+        ego_model = carla_vehicle_list.vehicle_list[self.vehicle_model.currentText()]
+        color_r = self.vehicle_color_r.value()
+        color_g = self.vehicle_color_g.value()
+        color_b = self.vehicle_color_b.value()
+        ego_color_input = "{},{},{}".format(color_r,color_g,color_b)
+        ego_safety_distance = self.safety_distance.value()
+
+        self.parent().freewayenv.edit_ego_vehicle(
+                vehicle_color =ego_color_input,
+                safety_distance=ego_safety_distance,
+                model_name=ego_model)
+
         self.hide()
         self.parent_window.hide()
         self.parent_window.show()

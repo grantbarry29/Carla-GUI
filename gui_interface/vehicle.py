@@ -6,6 +6,7 @@ import sys
 import edit_section
 import freeway_window
 import gui_test as primary
+import section_vector
 
 class Vehicle(QLabel):
     def __init__(self,lane,lead,gap,model,r,g,b,parent=None):
@@ -40,12 +41,22 @@ class Vehicle(QLabel):
 
         self.setFont(QFont("Arial",12))
         self.setStyleSheet("background:rgb({},{},{}); color:{};".format(self.color_r,self.color_g,self.color_b,text_color))
-        
 
     clicked=pyqtSignal()
     def mouseReleaseEvent(self, ev):
         self.clicked.emit()
 
+
+    def change_color(self,r,g,b):
+        #change add_vehicle page color
+        luminance = 0.2126 * int(r) + 0.7152 * int(g) + 0.0722 * int(b)
+        text_color = "white"
+        if luminance > 128:
+            text_color = "black"
+        self.setStyleSheet("background:rgb({},{},{}); color:{};".format(r,g,b,text_color))
+
+
+        
 
 
 

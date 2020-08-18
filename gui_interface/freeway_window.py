@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QFont, QPixmap
 from functools import partial
+from multiprocessing import Process
 import sys
 import edit_section
 import section_vector
@@ -14,10 +15,11 @@ import carla_vehicle_list
 import start_sim_pop_up
 import back_home_pop_up
 import gui_test as primary
-
 import glob
 import os
 import sys
+sys.path.append("..")
+
 
 try:
     sys.path.append(glob.glob('../carla/dist/carla-*%d.%d-%s.egg' % (
@@ -27,11 +29,14 @@ try:
 except IndexError:
     pass
 
+
 import carla
 import time
 
+
 from backend.carla_env import CARLA_ENV
 from backend.section_environment import FreewayEnv
+
 
 
 class ExtendedQLabel(QLabel):
@@ -50,9 +55,37 @@ class Freeway_Window(QMainWindow):
         self.setGeometry(0,0,primary.width,primary.height)
         self.setWindowTitle("Freeway")
         self.initUI()
+        self.carla_start()
+
+
+    def carla_start(self):
+
+        try:
+            client = carla.Client("localhost",2000)
+            client.set_timeout(10.0)
+            world = client.load_world('Town04')
+
+            weather = carla.WeatherParameters(
+            cloudiness = 10.0,
+            precipitation=0.0,
+            sun_altitude_angle=90.0)
+            world.set_weather(weather)
+
+            spectator = world.get_spectator()
+            spectator.set_transform(carla.Transform(carla.Location(x=-170, y=-151, z=116.5), carla.Rotation(pitch=-33, yaw= 56.9, roll=0.0)))   
+
+            self.env = CARLA_ENV(world)
+
+        finally:
+            time.sleep(5)
+            self.env.destroy_actors()
+        
 
 
     def initUI(self):
+
+        #CARLA SETTINGS
+        
         self.stack = QStackedLayout()
         self.main_widget = QWidget()
         self.main_widget.setLayout(self.stack)
@@ -120,7 +153,7 @@ class Freeway_Window(QMainWindow):
 
         #Min Speed
         self.min_speed_text = QLabel()
-        self.min_speed_text.setText("Minimum Speed (km/h)")
+        self.min_speed_text.setText("Minimum Speed (m/s)")
         self.min_speed_text.setFont(QFont("Arial", 18))
 
         self.min_speed = QSpinBox()
@@ -129,14 +162,14 @@ class Freeway_Window(QMainWindow):
         self.min_speed.setMinimumHeight(primary.height/20)
         self.min_speed.setMinimumWidth(primary.height/20)
         self.min_speed.setMinimum(0)
-        self.min_speed.setValue(50)
+        self.min_speed.setValue(15)
         self.min_speed.valueChanged.connect(self.validate_input_speed)
         self.min_speed.textChanged.connect(self.validate_input_speed)
 
 
         #Max Speed
         self.max_speed_text = QLabel()
-        self.max_speed_text.setText("Maximum Speed (km/h)")
+        self.max_speed_text.setText("Maximum Speed (m/s)")
         self.max_speed_text.setFont(QFont("Arial", 18))
 
         self.max_speed = QSpinBox()
@@ -146,7 +179,7 @@ class Freeway_Window(QMainWindow):
         self.max_speed.setMinimumWidth(primary.height/20)
         self.max_speed.setMinimum(self.min_speed.value())
         self.max_speed.setMaximum(150)
-        self.max_speed.setValue(100)
+        self.max_speed.setValue(30)
         self.max_speed.valueChanged.connect(self.validate_input_speed)
         self.max_speed.textChanged.connect(self.validate_input_speed)
         self.min_speed.setMaximum(self.max_speed.value())
@@ -303,6 +336,12 @@ class Freeway_Window(QMainWindow):
         self.back_button_pop_up.hide()
 
 
+        #carla_vehicle_list
+        self.carla_vehicle_list_subject_lead = list()
+        self.carla_vehicle_list_subject_follow = list()
+        self.carla_vehicle_list_left_lead = list()
+        self.carla_vehicle_list_left_follow = list()
+
 
         #GRID SETTINGS
 
@@ -382,10 +421,21 @@ class Freeway_Window(QMainWindow):
             return
         else:
             index = int(index)
+
+        if self.num_sections.isEnabled() == True:
+            print("hey")
+            self.freewayenv = FreewayEnv(self.env,self.num_sections.value())
+            self.freewayenv.add_ego_vehicle()
+
         self.num_sections.setDisabled(True)
         self.vec_populate()
         QtWidgets.QStackedLayout.setCurrentWidget(self.stack,section_vector.page_list[index])
         section_vector.page_list[index].section_id.setCurrentText("Section {}".format(index))
+        
+
+        
+
+
 
     def road_button_click_1(self):
         index = self.road_button1.text()
@@ -553,11 +603,115 @@ class Freeway_Window(QMainWindow):
         self.max_speed.setMinimum(lower_bound)
 
     
+    def clear_carla_vehicles(self):
+        for i in self.carla_vehicle_list_subject_lead:
+            self.freewayenv.remove_full_path_vehicle(i)
+
+        for i in self.carla_vehicle_list_subject_follow:
+            self.freewayenv.remove_full_path_vehicle(i)
+        
+        for i in self.carla_vehicle_list_left_lead:
+            self.freewayenv.remove_full_path_vehicle(i)
+
+        for i in self.carla_vehicle_list_left_follow:
+            self.freewayenv.remove_full_path_vehicle(i)
+
+
+    def add_carla_vehicles(self):
+
+        #subject lane vehicle settings
+        subject_cars = list()
+        for i in self.add_vehicles_widget.subject_vehicle_list:
+            if i.lead == True:
+                lead_string = "follow"
+            else:
+                lead_string = "lead"
+            model = carla_vehicle_list.vehicle_list[i.model]
+            data = tuple((i.gap,model,lead_string,i.color_r,i.color_g,i.color_b))
+            subject_cars.append(data)
+
+        #left lane vehicle settings
+        left_cars = list()
+        for i in self.add_vehicles_widget.left_vehicle_list:
+            if i.lead == True:
+                lead_string = "follow"
+            else:
+                lead_string = "lead"
+            model = carla_vehicle_list.vehicle_list[i.model]
+            data = tuple((i.gap,model,lead_string,i.color_r,i.color_g,i.color_b))
+            left_cars.append(data)
+
+
+        #subject lane vehicles
+        for car in subject_cars:
+            print("gap =", car[0])
+            color = ("{},{},{}".format(car[3],car[4],car[5]))
+            subject_car = self.freewayenv.add_full_path_vehicle(gap = car[0], model_name=car[1], vehicle_type = car[2], 
+                                                            choice = "subject",vehicle_color=color)
+            if car[2] == "lead":
+                self.carla_vehicle_list_subject_lead.append(subject_car)
+            else:
+                self.carla_vehicle_list_subject_follow.append(subject_car)
+
+        #left lane vehicles
+        for car in left_cars:
+            color = ("{},{},{}".format(car[3],car[4],car[5]))
+            left_car = self.freewayenv.add_full_path_vehicle(gap = car[0], model_name=car[1], vehicle_type = car[2], 
+                                                        choice = "left", vehicle_color=color)
+
+            if car[2] == "lead":
+                self.carla_vehicle_list_left_lead.append(left_car)
+            else:
+                self.carla_vehicle_list_left_follow.append(left_car)
+
+
+    #broken
+    def copy_map_color_to_sections(self):
+
+        car_color_list = list()
+        for widget in self.add_vehicles_widget.map_background.children():
+            if widget.objectName() == "car":
+                lane = widget.lane
+                lead = widget.lead
+                position = widget.position
+                r = widget.color_r
+                g = widget.color_g
+                b = widget.color_b
+                text = widget.text()
+                tupl = tuple((lane,lead,position,r,g,b,text))
+                car_color_list.append(tupl)
+
+        
+        for i in range(1,len(section_vector.page_list)):
+            for car in section_vector.page_list[i].map_background.children():
+                if car.objectName() == "car":
+                    print(car.text())
+                    for colors in car_color_list:
+                        if colors[6] == car.text():
+                            r = colors[3]
+                            g = colors[4]
+                            b = colors[5]
+                            text_color = "white"
+                            car.setStyleSheet("background:rgb({},{},{}); color:{};".format(r,g,b,text_color))
+
+
 
 
     def copy_map_to_sections(self):
+        
+        #self.clear_carla_vehicles()
+        #self.add_carla_vehicles()
+
+        num_cars = 0
+        for i in self.add_vehicles_widget.subject_vehicle_list:
+            num_cars += 1
+        for i in self.add_vehicles_widget.left_vehicle_list:
+            num_cars += 1
+
+
 
         car_attribute_list = list()
+        """
         for widget in self.add_vehicles_widget.map_background.children():
             if widget.objectName() == "car":
                 lane = widget.lane
@@ -569,6 +723,23 @@ class Freeway_Window(QMainWindow):
                 b = widget.color_b
                 tupl = tuple((lane,lead,gap,model,r,g,b))
                 car_attribute_list.append(tupl)
+                self.temp_position = widget.position
+        """
+
+        for i in range(0,num_cars):
+            car = self.add_vehicles_widget.all_vehicles_list[i]
+            lane = car.lane
+            lead = car.lead
+            gap = car.gap
+            model = car.model
+            r = car.color_r
+            g = car.color_g
+            b = car.color_b
+            tupl = tuple((lane,lead,gap,model,r,g,b))
+            car_attribute_list.append(tupl)
+            self.temp_position = car.position
+
+                
 
         
         for i in range(1,len(section_vector.page_list)):
@@ -579,7 +750,6 @@ class Freeway_Window(QMainWindow):
             left_lead_count = 0
             left_follow_count = 0
             for settings in car_attribute_list:
-                gap = int(settings[2])
                 car_copy = vehicle.Vehicle(settings[0],settings[1],settings[2],settings[3],settings[4],settings[5],settings[6])
                 car_copy.setParent(section_vector.page_list[i].map_background)
 
@@ -607,14 +777,30 @@ class Freeway_Window(QMainWindow):
                         car_copy.move(placement_reference/1.77, self.left_follow_gaps[left_follow_count])
                         left_follow_count += 1
                 
+                section_vector.page_list[i].edit_vehicle_list[z-1].title_text.setText("Edit Vehicle {}".format(z))
+                section_vector.page_list[i].edit_vehicle_list[z-1].car_index = z
+                section_vector.page_list[i].edit_vehicle_list[z-1].vehicle_model.setCurrentText(settings[3])
+                section_vector.page_list[i].edit_vehicle_list[z-1].vehicle_color_r.setValue(settings[4])
+                section_vector.page_list[i].edit_vehicle_list[z-1].vehicle_color_g.setValue(settings[5])
+                section_vector.page_list[i].edit_vehicle_list[z-1].vehicle_color_b.setValue(settings[6])
+                
 
+                #car_copy.car_index = z
                 car_copy.clicked.connect(partial(self.car_click,i,z-1) )    
                 car_copy.setObjectName("car")
+                car_copy.position = self.temp_position
                 car_copy.setText(str(z))
+                section_vector.page_list[i].vehicle_list.append(car_copy)
                 z+=1
                 car_copy.show()
-                car_copy.raise_()
 
+        """
+        #keep original cars on top
+        for page in range(1,len(section_vector.page_list)):
+            for i in range(0,num_cars):
+                cur_page = section_vector.page_list[page]
+                cur_page.vehicle_list[i].raise_()
+        """
 
 
     def add_vehicle_edit_windows(self):
@@ -628,7 +814,7 @@ class Freeway_Window(QMainWindow):
             for car_index in range(0,car_count):
                 edit_car = edit_vehicle.Edit_Vehicle_Widget(car_index+1,section_vector.page_list[page])
                 edit_car.setParent(section_vector.page_list[page])
-                edit_car.car_index = car_index
+                #edit_car.car_index = car_index
                 edit_car.setObjectName("edit")
                 edit_car.safety_distance.setValue(self.safety_distance.value()) 
                 edit_car.hide()
@@ -717,116 +903,78 @@ class Freeway_Window(QMainWindow):
 
 
     def run(self):
+        num_vehicles = 0
+        for i in self.add_vehicles_widget.subject_vehicle_list:
+            num_vehicles += 1
+        for i in self.add_vehicles_widget.left_vehicle_list:
+            num_vehicles += 1
 
-        #general settings
-        number_freeway_sections = self.num_sections.value()
+
         allow_collisions = self.allow_collisions.isChecked()
         minimum_speed = self.min_speed.value()
-        max_speed = self.max_speed.value()
-        safety_dist = self.safety_distance.value()
+        maximum_speed = self.max_speed.value()
         view = self.start_sim_pop_up.choose_view.currentIndex()
-
-        #ego vehicle settings
-        ego_model = carla_vehicle_list.vehicle_list[self.edit_ego_vehicle.vehicle_model.currentText()]
-        color_r = self.edit_ego_vehicle.vehicle_color_r.value()
-        color_g = self.edit_ego_vehicle.vehicle_color_g.value()
-        color_b = self.edit_ego_vehicle.vehicle_color_b.value()
-        ego_color_input = "{},{},{}".format(color_r,color_g,color_b)
-        ego_safety_distance = self.edit_ego_vehicle.safety_distance.value()
-
-        #subject lane vehicle settings
-        subject_cars = list()
-        for i in self.add_vehicles_widget.subject_vehicle_list:
-            if i.lead == True:
-                lead_string = "follow"
-            else:
-                lead_string = "lead"
-            model = carla_vehicle_list.vehicle_list[i.model]
-            data = tuple((i.gap,model,lead_string,i.color_r,i.color_g,i.color_b))
-            subject_cars.append(data)
-
-        #left lane vehicle settings
-        left_cars = list()
-        for i in self.add_vehicles_widget.left_vehicle_list:
-            if i.lead == True:
-                lead_string = "follow"
-            else:
-                lead_string = "lead"
-            model = carla_vehicle_list.vehicle_list[i.model]
-            data = tuple((i.gap,model,lead_string,i.color_r,i.color_g,i.color_b))
-            left_cars.append(data)
+        control = self.start_sim_pop_up.choose_control.currentIndex()
 
 
-        """ work in progress
-        #subject lane behavior settings
-        for i in range(1,len(section_vector.page_list)):
-            print("\n--Section {}--".format(i))
-            for j in section_vector.page_list[i].edit_vehicle_list:
-                #car_position = j.position
-                #car_command = 
-                print("Lane Change:", j.lane_change_yes.isChecked())
-                if j.lane_change_yes.isChecked():
-                    print("Lane Change Time:", j.lane_change_time.toPlainText())
-                print("Safety Distance:", j.safety_distance.toPlainText())
-                if j.vehicle_color_r.toPlainText() == "":
-                    print("Color: Default")
-                else:
-                    print("Color: ({},{},{})".format(j.vehicle_color_r.toPlainText(),j.vehicle_color_g.toPlainText(),j.vehicle_color_b.toPlainText()))
-        """
 
-        
         try:
-            client = carla.Client("localhost",2000)
-            client.set_timeout(10.0)
-            world = client.load_world('Town04')
+            
+            self.freewayenv.max_speed = maximum_speed
+            self.freewayenv.min_speed = minimum_speed
 
-            weather = carla.WeatherParameters(
-            cloudiness = 10.0,
-            precipitation=0.0,
-            sun_altitude_angle=90.0)
-            world.set_weather(weather)
+            #vehicle behavior settings
+            for i in range(1,len(section_vector.page_list)):
+                for j in range(0,num_vehicles):
+                    car_index = section_vector.page_list[i].edit_vehicle_list[j].car_index
 
-            spectator = world.get_spectator()
-            spectator.set_transform(carla.Transform(carla.Location(x=-170, y=-151, z=116.5), carla.Rotation(pitch=-33, yaw= 56.9, roll=0.0)))   
+                    current_car = None
+                    for cars in self.add_vehicles_widget.subject_vehicle_list:
+                        if str(car_index) == cars.text():
+                            current_car = cars
+                    for cars in self.add_vehicles_widget.left_vehicle_list:
+                        if str(car_index) == cars.text():
+                            current_car = cars
 
-            env = CARLA_ENV(world)
-            time.sleep(10)
+                    lead_input = "lead"
+                    if current_car.lead == 1:
+                        lead_input = "follow"        
+                    lane_input = current_car.lane
+                    position_input = current_car.position
+                    command_input1 = "speed"
+                    command_input1_time = 0
+                    command_input2 = "speed"
 
-            freewayenv = FreewayEnv(env,number_freeway_sections) 
+                    if section_vector.page_list[i].edit_vehicle_list[j].lane_change_yes.isChecked():
+                        command_input1 = "lane"
+                        command_input1_time = section_vector.page_list[i].edit_vehicle_list[j].lane_change_time.value()
+                    
+                    if section_vector.page_list[i].edit_vehicle_list[j].vary_speed_button.isChecked():
+                        command_input2 = "distance"
+                    
+                    self.freewayenv.edit_normal_section_setting(i,lead_input,lane_input,position_input,command=command_input2)
+                    self.freewayenv.edit_normal_section_setting(i,lead_input,lane_input,position_input,command=command_input1,command_start_time=command_input1_time)
 
-            #ego vehicle
-            freewayenv.add_ego_vehicle()
-            freewayenv.edit_ego_vehicle(
-                vehicle_color =ego_color_input,
-                safety_distance=ego_safety_distance,
-                model_name=ego_model)
-
-
-            #subject lane vehicles
-            for car in subject_cars:
-                color = ("{},{},{}".format(car[3],car[4],car[5]))
-                subject_car = freewayenv.add_full_path_vehicle(gap = car[0], model_name=car[1], vehicle_type = car[2], 
-                                                                choice = "subject",vehicle_color=color)
-
-            #left lane vehicles
-            for car in left_cars:
-                color = ("{},{},{}".format(car[3],car[4],car[5]))
-                left_car = freewayenv.add_full_path_vehicle(gap = car[0], model_name=car[1], vehicle_type = car[2], 
-                                                            choice = "left", vehicle_color=color)
-
-            freewayenv.edit_normal_section_setting(2,"lead","subject",0,command="lane",command_start_time=0)
-            #freewayenv.edit_normal_section_setting(2,"lead","subject",0,command="distance",command_start_time=3)
-
+            #view choice
             if view == 0:
+                spec_mode = "human_driving"
+            elif view == 1:
                 spec_mode = "first_person"
             else:
                 spec_mode = None
-            freewayenv.SectionBackend(spectator_mode=spec_mode,allow_collision=allow_collisions)
+
+            #control choice
+            if control == 0:
+                control_mode = False
+            else:
+                control_mode = True
+
+            self.freewayenv.SectionBackend(spectator_mode=spec_mode,allow_collision=allow_collisions,enable_human_control=control_mode)
 
         finally:
-            time.sleep(10)
-            env.destroy_actors()
-        
+            time.sleep(5)
+            self.env.destroy_actors()
+    
             
 
 

@@ -5,6 +5,13 @@ import sys
 import freeway_window as Fway
 import intersection_window as Inter
 
+import time
+import glob
+import os
+import sys
+sys.path.append("..")
+
+
 
 app = QtWidgets.QApplication(sys.argv)
 screen = app.primaryScreen()
@@ -61,6 +68,21 @@ class Start_Window(QMainWindow):
 
         #spacer
         self.spacer = QSpacerItem(40,int(height/4),QtWidgets.QSizePolicy.Maximum,QtWidgets.QSizePolicy.Maximum)
+
+        """
+        #loading box
+        self.loading = QDialog(self)
+        self.loading.move(width/2,height/2)
+        self.loading.setMinimumWidth(width/6)
+        self.loading.setMinimumHeight(height/6)
+        self.loading.setMaximumWidth(width/6)
+        self.loading.setMaximumHeight(height/6)
+        self.loading.hide()
+
+        self.loading_label = QLabel(self.loading)
+        self.loading_label.setText("Loading...")
+        """
+        
 
         #grid
         self.grid.addWidget(self.title_text,0,0,3,2)

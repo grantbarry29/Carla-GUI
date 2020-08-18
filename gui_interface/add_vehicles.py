@@ -7,6 +7,7 @@ import edit_section
 import drop_down_window_add
 import drop_down_window_edit
 import vehicle
+import carla_vehicle_list
 
 import gui_test as primary
 
@@ -35,8 +36,8 @@ class Add_Vehicles_Window(QWidget):
         self.back_button.setFont(QFont("Arial", 16))
         self.back_button.setMaximumWidth(primary.width/10)
         self.back_button.setMaximumHeight(primary.height/26)
-        self.back_button.clicked.connect(self.freeway_window.copy_map_to_sections)
         self.back_button.clicked.connect(self.freeway_window.add_vehicle_edit_windows)
+        self.back_button.clicked.connect(self.freeway_window.copy_map_to_sections)     
         self.back_button.clicked.connect(self.freeway_window.hide_add_vehicles)
         
 
@@ -175,6 +176,8 @@ class Add_Vehicles_Window(QWidget):
 
 
         #VEHICLE LISTS
+        self.all_vehicles_list = list()
+
         self.subject_vehicle_list = list()
         self.left_vehicle_list = list()
 
@@ -228,12 +231,16 @@ class Add_Vehicles_Window(QWidget):
     def add_vehicle_subject(self):
 
         gap = self.add_widget_subject.gap.value()
-        gap = int(gap)
         lead_follow = self.add_widget_subject.vehicle_type.currentIndex()
         color_r = self.add_widget_subject.vehicle_color_r.value()
         color_g = self.add_widget_subject.vehicle_color_g.value()
         color_b = self.add_widget_subject.vehicle_color_b.value()
         model = self.add_widget_subject.vehicle_model.currentText()
+        model_val = carla_vehicle_list.vehicle_list[model]
+        color_rgb = f'{color_r},{color_g},{color_b}'
+        lead_string = "lead"
+        if lead_follow == 1:
+            lead_string = "follow"
         
         
         self.car = vehicle.Vehicle("subject",lead_follow,gap,model,color_r,color_g,color_b,self.map_background)
@@ -250,7 +257,7 @@ class Add_Vehicles_Window(QWidget):
 
                 self.car.move(self.map_background.width()/1.48,car_placement)
                 self.subject_follow_gaps.append(car_placement)
-                self.position = 0
+                self.car.position = 0
 
             else:
                 if len(self.subject_follow_gaps) == 2: #only allow 2 vehicles per lane
@@ -262,7 +269,7 @@ class Add_Vehicles_Window(QWidget):
 
                     self.car.move(self.map_background.width()/1.48,car_placement)
                     self.subject_follow_gaps.append(car_placement)
-                    self.position = 1
+                    self.car.position = 1
 
 
         else: #if lead vehicle
@@ -273,7 +280,7 @@ class Add_Vehicles_Window(QWidget):
 
                 self.car.move(self.map_background.width()/1.48, car_placement)
                 self.subject_lead_gaps.append(car_placement)
-                self.position = 0
+                self.car.position = 0
 
             else:
                 if len(self.subject_lead_gaps) == 2: #only allow 2 vehicles per lane
@@ -285,14 +292,24 @@ class Add_Vehicles_Window(QWidget):
 
                     self.car.move(self.map_background.width()/1.48, car_placement)
                     self.subject_lead_gaps.append(car_placement)
-                    self.position = 1
+                    self.car.position = 1
 
-
+        
         self.subject_vehicle_list.append(self.car)
         self.car.setText("{}".format(len(self.left_vehicle_list)+len(self.subject_vehicle_list)))
         self.car.setAlignment(QtCore.Qt.AlignCenter)
         self.car.setObjectName("car")
+        self.all_vehicles_list.append(self.car)
         self.car.show()
+
+        carla_car = self.parent().freewayenv.add_full_path_vehicle(gap = gap, model_name=model_val, vehicle_type =lead_string, 
+                                                            choice = "subject",vehicle_color=color_rgb)
+
+        if lead_string == "lead":
+            self.parent().carla_vehicle_list_subject_lead.append(carla_car)
+        else:
+            self.parent().carla_vehicle_list_subject_follow.append(carla_car)
+
 
     def add_vehicle_left(self):
         
@@ -304,6 +321,11 @@ class Add_Vehicles_Window(QWidget):
         color_g = self.add_widget_left.vehicle_color_g.value()
         color_b = self.add_widget_left.vehicle_color_b.value()
         model = self.add_widget_left.vehicle_model.currentText()
+        model_val = carla_vehicle_list.vehicle_list[model]
+        color_rgb = f'{color_r},{color_g},{color_b}'
+        lead_string = "lead"
+        if lead_follow == 1:
+            lead_string = "follow"
         
         
         self.car = vehicle.Vehicle("left",lead_follow,gap,model,color_r,color_g,color_b,self.map_background)
@@ -320,6 +342,8 @@ class Add_Vehicles_Window(QWidget):
 
                 self.car.move(self.map_background.width()/1.77, car_placement)
                 self.left_follow_gaps.append(car_placement)
+                self.car.position = 0
+
             else:
                 if len(self.left_follow_gaps) == 2: #only allow 2 vehicles per lane
                     return
@@ -330,6 +354,7 @@ class Add_Vehicles_Window(QWidget):
 
                     self.car.move(self.map_background.width()/1.77,car_placement)
                     self.left_follow_gaps.append(car_placement)
+                    self.car.position = 1
 
         else:
             if not self.left_lead_gaps: #if no cars in subject lead lane
@@ -339,6 +364,7 @@ class Add_Vehicles_Window(QWidget):
 
                 self.car.move(self.map_background.width()/1.77, car_placement)
                 self.left_lead_gaps.append(car_placement)
+                self.car.position = 0
 
             else:
                 if len(self.left_lead_gaps) == 2: #only allow 2 vehicles per lane
@@ -350,12 +376,23 @@ class Add_Vehicles_Window(QWidget):
 
                     self.car.move(self.map_background.width()/1.77, car_placement)
                     self.left_lead_gaps.append(car_placement)
+                    self.car.position = 1
 
 
         self.left_vehicle_list.append(self.car)
         self.car.setText("{}".format(len(self.left_vehicle_list)+len(self.subject_vehicle_list)))
         self.car.setObjectName("car")
+        self.all_vehicles_list.append(self.car)
         self.car.show()
+
+
+        carla_car = self.parent().freewayenv.add_full_path_vehicle(gap = gap, model_name=model_val, vehicle_type =lead_string, 
+                                                            choice = "left",vehicle_color=color_rgb)
+
+        if lead_string == "lead":
+            self.parent().carla_vehicle_list_left_lead.append(carla_car)
+        else:
+            self.parent().carla_vehicle_list_left_follow.append(carla_car)
         
 
 

@@ -35,7 +35,8 @@ class Start_Sim_Pop_Up(QDialog):
 
         self.choose_view = QComboBox()
         self.choose_view.addItem("First Person")
-        self.choose_view.addItem("Bird's Eye")
+        self.choose_view.addItem("Third Person")
+        self.choose_view.addItem("Free Roam")
 
 
 
@@ -44,13 +45,15 @@ class Start_Sim_Pop_Up(QDialog):
         self.choose_control_text.setText("Choose Control Type")
 
         self.choose_control = QComboBox()
-        self.choose_control.addItem("Drive Manually")
         self.choose_control.addItem("Drive Automatically")
+        self.choose_control.addItem("Drive Manually")
+        self.choose_control.currentIndexChanged.connect(self.choose_manual)
+        
         
 
         self.start_simulation_button = QPushButton()
         self.start_simulation_button.setText("Start Simulation")
-        self.start_simulation_button.clicked.connect(self.parent_window.run)
+        self.start_simulation_button.clicked.connect(self.process_start)
 
 
         #GRID SETTINGS
@@ -61,6 +64,16 @@ class Start_Sim_Pop_Up(QDialog):
         self.grid.addWidget(self.start_simulation_button, 3,1,1,1)
         
         
+
+    def process_start(self):
+        self.parent_window.run()
+    
+    def choose_manual(self):
+        if self.choose_control.currentIndex() == 1:
+            self.choose_view.setCurrentIndex(0)
+            self.choose_view.setEnabled(False)
+        else:
+            self.choose_view.setEnabled(True)
 
 
         

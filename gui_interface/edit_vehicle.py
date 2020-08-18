@@ -6,6 +6,7 @@ import freeway_window
 import vehicle
 import add_vehicles
 import section_vector
+import carla_vehicle_list
 
 import gui_test as primary
 
@@ -20,7 +21,7 @@ class Edit_Vehicle_Widget(QFrame):
     def initUI(self):
         self.grid = QGridLayout()
         self.setLayout(self.grid)
-        self.grid.setContentsMargins(15,0,0,0)
+        self.grid.setContentsMargins(15,15,0,0)
 
         self.setFrameStyle(1)
         self.setAutoFillBackground(True)
@@ -45,6 +46,15 @@ class Edit_Vehicle_Widget(QFrame):
         self.title_text.setAlignment(QtCore.Qt.AlignHCenter)
         #self.title_text.setStyleSheet("background-color: yellow;")
 
+        
+        #vehicle model
+        self.vehicle_model_text = QLabel()
+        self.vehicle_model_text.setText("Model")
+
+        self.vehicle_model = QComboBox()
+        for vehicle in carla_vehicle_list.vehicle_list:
+            self.vehicle_model.addItem(vehicle)
+        
 
         #vary speed by range
         self.vary_speed_range_text = QLabel()
@@ -53,6 +63,7 @@ class Edit_Vehicle_Widget(QFrame):
 
         self.vary_speed_button = QRadioButton()
         self.vary_speed_button.setStyleSheet("margin-left:50%; margin-right:50%;")
+
 
 
         #maintain max speed test
@@ -135,28 +146,36 @@ class Edit_Vehicle_Widget(QFrame):
         self.vehicle_color.setLayout(self.horiz_layout)
         self.vehicle_color.setMaximumHeight(primary.height/12)
 
-        self.vehicle_color_r = QTextEdit()
-        self.vehicle_color_g = QTextEdit()
-        self.vehicle_color_b = QTextEdit()
+        self.vehicle_color_r = QSpinBox()
+        self.vehicle_color_g = QSpinBox()
+        self.vehicle_color_b = QSpinBox()
+
 
         self.vehicle_color_r.setAlignment(QtCore.Qt.AlignCenter)
         self.vehicle_color_g.setAlignment(QtCore.Qt.AlignCenter)
         self.vehicle_color_b.setAlignment(QtCore.Qt.AlignCenter)
 
-        self.vehicle_color_r.setMinimumWidth(primary.width/50)
+        self.vehicle_color_r.setMinimumWidth(primary.width/30)
         self.vehicle_color_r.setMaximumHeight(primary.height/30)
-        self.vehicle_color_g.setMinimumWidth(primary.width/50)
+        self.vehicle_color_g.setMinimumWidth(primary.width/30)
         self.vehicle_color_g.setMaximumHeight(primary.height/30)
-        self.vehicle_color_b.setMinimumWidth(primary.width/50)
+        self.vehicle_color_b.setMinimumWidth(primary.width/30)
         self.vehicle_color_b.setMaximumHeight(primary.height/30)
 
         self.vehicle_color_r.setFont(QFont("Arial", 12))
         self.vehicle_color_g.setFont(QFont("Arial", 12))
         self.vehicle_color_b.setFont(QFont("Arial", 12))
 
-        self.vehicle_color_r.setPlaceholderText("255")
-        self.vehicle_color_g.setPlaceholderText("255")
-        self.vehicle_color_b.setPlaceholderText("255")
+        self.vehicle_color_r.setMinimum(0)
+        self.vehicle_color_r.setMaximum(255)
+        self.vehicle_color_g.setMinimum(0)
+        self.vehicle_color_g.setMaximum(255)
+        self.vehicle_color_b.setMinimum(0)
+        self.vehicle_color_b.setMaximum(255)
+
+        self.vehicle_color_r.setValue(255)
+        self.vehicle_color_g.setValue(255)
+        self.vehicle_color_b.setValue(255)
 
         self.horiz_layout.addWidget(self.vehicle_color_r)
         self.horiz_layout.addWidget(self.vehicle_color_g)
@@ -174,9 +193,10 @@ class Edit_Vehicle_Widget(QFrame):
 
 
         #GRID SETTINGS
-        self.grid.addWidget(self.close_button,             0,0,1,1)
-        self.grid.addWidget(self.spacer,                   1,0,1,1)
-        self.grid.addWidget(self.title_text,               2,0,1,3)
+        self.grid.addWidget(self.close_button,             0,0,1,1)       
+        self.grid.addWidget(self.title_text,               1,0,1,3)
+        self.grid.addWidget(self.vehicle_model_text,       2,0,1,1)
+        self.grid.addWidget(self.vehicle_model,            2,1,1,1)
         self.grid.addWidget(self.vary_speed_range_text,    3,0,1,1)
         self.grid.addWidget(self.maintain_max_speed_text,  3,1,1,1)
         self.grid.addWidget(self.vary_speed_button,        4,0,1,1)
@@ -187,20 +207,127 @@ class Edit_Vehicle_Widget(QFrame):
         self.grid.addWidget(self.lane_change_time,         6,1,1,2)
         self.grid.addWidget(self.safety_distance_text,     7,0,1,1)
         self.grid.addWidget(self.safety_distance,          7,1,1,2)
-        #self.grid.addWidget(self.vehicle_color_text,       8,0,1,1)
-        #self.grid.addWidget(self.vehicle_color,            8,1,1,1)
-        self.grid.addWidget(self.delete_button,            8,0,1,1)
-        self.grid.addWidget(self.spacer2,                  9,0,1,1)
+        self.grid.addWidget(self.vehicle_color_text,       8,0,1,1)
+        self.grid.addWidget(self.vehicle_color,            8,1,1,1)
+        self.grid.addWidget(self.delete_button,            9,0,1,1)
+        self.grid.addWidget(self.spacer2,                  10,0,1,1)
         
 
 
-
-
+    def get_this_car(self):
+        for car in self.parent().freeway_window.add_vehicles_widget.map_background.children():
+            if car.objectName() == "car":
+                if int(car.text()) == self.car_index:
+                    return car
 
     def close(self):
+
+        
+
+        for car in self.parent().freeway_window.add_vehicles_widget.map_background.children():
+            if car.objectName() == "car":
+                if int(car.text()) == self.car_index:
+
+                    r = self.vehicle_color_r.value()
+                    g = self.vehicle_color_g.value()
+                    b = self.vehicle_color_b.value()
+                    model = carla_vehicle_list.vehicle_list[self.vehicle_model.currentText()]
+                    
+                    if car.lane == "subject" and car.lead: # if subject and follow
+                        vehicle = self.parent().freeway_window.freewayenv.edit_full_path_vehicle_init_setting(
+                            uniquename=  self.parent().freeway_window.carla_vehicle_list_subject_follow[car.position],
+                            vehicle_type= 'follow',
+                            choice= 'subject',
+                            model_name= model,
+                            safety_distance= self.safety_distance.value(),
+                            vehicle_color= f'{r},{g},{b}'
+                        )
+                        self.parent().freeway_window.carla_vehicle_list_subject_follow.pop(car.position)
+                        self.parent().freeway_window.carla_vehicle_list_subject_follow.insert(car.position,vehicle)
+
+
+                    if car.lane == "subject" and not car.lead: #if subject and lead
+                        vehicle = self.parent().freeway_window.freewayenv.edit_full_path_vehicle_init_setting(
+                            uniquename=  self.parent().freeway_window.carla_vehicle_list_subject_lead[car.position],
+                            vehicle_type= 'lead',
+                            choice= 'subject',
+                            model_name= model,
+                            safety_distance= self.safety_distance.value(),
+                            vehicle_color= f'{r},{g},{b}'
+                        )
+                        self.parent().freeway_window.carla_vehicle_list_subject_lead.pop(car.position)
+                        self.parent().freeway_window.carla_vehicle_list_subject_lead.insert(car.position,vehicle)
+
+
+                    if car.lane == "left" and car.lead: #if left and follow
+                        vehicle = self.parent().freeway_window.freewayenv.edit_full_path_vehicle_init_setting(
+                            uniquename=  self.parent().freeway_window.carla_vehicle_list_left_follow[car.position],
+                            vehicle_type= 'follow',
+                            choice= 'left',
+                            model_name= model,
+                            safety_distance= self.safety_distance.value(),
+                            vehicle_color= f'{r},{g},{b}'
+                        )
+                        self.parent().freeway_window.carla_vehicle_list_left_follow.pop(car.position)
+                        self.parent().freeway_window.carla_vehicle_list_left_follow.insert(car.position,vehicle)
+
+
+                    if car.lane == "left" and not car.lead:#if left and lead
+                        vehicle = self.parent().freeway_window.freewayenv.edit_full_path_vehicle_init_setting(
+                            uniquename=  self.parent().freeway_window.carla_vehicle_list_left_lead[car.position],
+                            vehicle_type= 'lead',
+                            choice= 'left',
+                            model_name= model,
+                            safety_distance= self.safety_distance.value(),
+                            vehicle_color= f'{r},{g},{b}'
+                        )
+                        self.parent().freeway_window.carla_vehicle_list_left_lead.pop(car.position)
+                        self.parent().freeway_window.carla_vehicle_list_left_lead.insert(car.position,vehicle)
+                        
+                    car.change_color(r,g,b)
+
+
+        self.copy_color_and_model_to_sections()
         self.hide()
         self.parent().hide()
         self.parent().show()
+
+    def copy_color_and_model_to_sections(self):
+        num_vehicles = 0
+        for i in self.parent().freeway_window.add_vehicles_widget.subject_vehicle_list:
+            num_vehicles += 1
+        for i in self.parent().freeway_window.add_vehicles_widget.left_vehicle_list:
+            num_vehicles += 1
+
+        car_list = self.parent().edit_vehicle_list
+        tuple_list = list()
+        for i in range(0,num_vehicles):
+            index = car_list[i].car_index
+            model = car_list[i].vehicle_model.currentText()
+            r = car_list[i].vehicle_color_r.value()
+            g = car_list[i].vehicle_color_g.value()
+            b = car_list[i].vehicle_color_b.value()
+            tupl = tuple((index,model,r,g,b))
+            tuple_list.append(tupl)
+
+        for page in range(1,len(section_vector.page_list)):
+            for i in range(0,num_vehicles):
+                edit_page = section_vector.page_list[page].edit_vehicle_list[i]
+
+                edit_page.vehicle_model.setCurrentText(tuple_list[i][1])
+                edit_page.vehicle_color_r.setValue(tuple_list[i][2])
+                edit_page.vehicle_color_g.setValue(tuple_list[i][3])
+                edit_page.vehicle_color_b.setValue(tuple_list[i][4])
+
+                """
+                error_fix = len(section_vector.page_list[1].vehicle_list)
+                index = error_fix - 1 - i
+                vehicle = section_vector.page_list[page].vehicle_list[index]
+                vehicle.change_color(tuple_list[index][2],tuple_list[index][3],tuple_list[index][4])
+                """
+
+                
+
 
 
     def lane_no_click(self):

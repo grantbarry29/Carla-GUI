@@ -6,6 +6,7 @@ import freeway_window
 import vehicle
 import add_vehicles
 import edit_vehicle
+import section_vector
 
 import gui_test as primary
 
@@ -74,17 +75,20 @@ class Edit_Section_Window(QWidget):
             
 
 
-
         #import settings
         self.import_settings_button = QPushButton()
         self.import_settings_button.setText("Import Settings")
         self.import_settings_button.setFont(QFont("Arial", 16))
-        
+        self.import_settings_button.clicked.connect(self.import_settings_click)
+        self.import_settings_button.setToolTip("Replaces section's vehicle behavior settings with those of the selected section.")
+
 
         self.import_settings = QComboBox()
         self.import_settings.setFont(QFont("Arial", 16))
         self.import_settings.addItem("Custom (Default)")
         for i in range(0,self.freeway_window.num_sections.value()):
+            if i == self.section_index-1:
+                continue
             self.import_settings.addItem("Section {}".format(i+1))
 
         self.view3 = QtWidgets.QListView()
@@ -157,7 +161,8 @@ class Edit_Section_Window(QWidget):
         #EDIT VEHICLE WINDOWS
         self.edit_vehicle_list = list()
 
-
+        #VEHICLE OBJECTS
+        self.vehicle_list = list()
 
         #ADD VEHICLES
 
@@ -197,6 +202,36 @@ class Edit_Section_Window(QWidget):
         self.freeway_window.edit_ego_vehicle.show()
         self.freeway_window.edit_ego_vehicle.raise_()
 
+    def import_settings_click(self):
+        if self.import_settings.currentIndex() == 0:
+            return
+        
+        num_cars = len(self.freeway_window.add_vehicles_widget.subject_vehicle_list)+len(self.freeway_window.add_vehicles_widget.left_vehicle_list)
+
+        import_index = int(self.import_settings.currentText()[8:])
+        import_page = section_vector.page_list[import_index]
+
+        tuple_list = list()
+        for i in range(0,num_cars):
+            car_index_input = import_page.edit_vehicle_list[i].car_index
+            vary_speed_input = import_page.edit_vehicle_list[i].vary_speed_button.isChecked()
+            lane_change_input = import_page.edit_vehicle_list[i].lane_change_yes.isChecked()
+            lane_change_time_input = import_page.edit_vehicle_list[i].lane_change_time.value()
+            safety_distance_input = import_page.edit_vehicle_list[i].safety_distance.value()
+            tupl = tuple((car_index_input,vary_speed_input,lane_change_input,lane_change_time_input,safety_distance_input))
+            tuple_list.append(tupl)
+
+        for i in range(0,num_cars):
+
+            if tuple_list[i][1] == True:
+                self.edit_vehicle_list[i].vary_speed_button.setChecked(True)
+            if tuple_list[i][2] == True:
+                self.edit_vehicle_list[i].lane_change_yes.setChecked(True)
+                self.edit_vehicle_list[i].lane_change_time.setDisabled(False)
+                self.edit_vehicle_list[i].lane_change_time_text.setDisabled(False)
+            
+            self.edit_vehicle_list[i].lane_change_time.setValue(tuple_list[i][3])
+            self.edit_vehicle_list[i].safety_distance.setValue(tuple_list[i][4])
 
 
 
