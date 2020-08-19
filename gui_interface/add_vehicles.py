@@ -36,8 +36,8 @@ class Add_Vehicles_Window(QWidget):
         self.back_button.setFont(QFont("Arial", 16))
         self.back_button.setMaximumWidth(primary.width/10)
         self.back_button.setMaximumHeight(primary.height/26)
-        self.back_button.clicked.connect(self.freeway_window.add_vehicle_edit_windows)
-        self.back_button.clicked.connect(self.freeway_window.copy_map_to_sections)     
+        self.back_button.clicked.connect(self.freeway_window.add_vehicle_edit_windows) 
+        self.back_button.clicked.connect(self.freeway_window.copy_map_to_sections)   
         self.back_button.clicked.connect(self.freeway_window.hide_add_vehicles)
         
 

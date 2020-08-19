@@ -274,7 +274,7 @@ class Freeway_Window(QMainWindow):
         self.road_button1.setMinimumHeight(primary.height/25)
         self.road_button1.setText(str(self.road_array[0]))
         self.road_button1.clicked.connect(self.road_button_click_1)
-        self.road_button1.clicked.connect(self.copy_map_to_sections)
+
 
         
 
@@ -285,7 +285,7 @@ class Freeway_Window(QMainWindow):
         self.road_button2.setMinimumHeight(primary.height/25)
         self.road_button2.setText(str(self.road_array[1]))
         self.road_button2.clicked.connect(self.road_button_click_2)
-        self.road_button2.clicked.connect(self.copy_map_to_sections)
+
 
         self.road_button3 = QPushButton(self.map_widget)
         self.road_button3.setMaximumWidth(primary.width/30)
@@ -294,7 +294,7 @@ class Freeway_Window(QMainWindow):
         self.road_button3.setMinimumHeight(primary.height/25)
         self.road_button3.setText(str(self.road_array[2]))
         self.road_button3.clicked.connect(self.road_button_click_3)
-        self.road_button3.clicked.connect(self.copy_map_to_sections)
+
 
         self.road_button4 = QPushButton(self.map_widget)
         self.road_button4.setMaximumWidth(primary.width/30)
@@ -303,7 +303,7 @@ class Freeway_Window(QMainWindow):
         self.road_button4.setMinimumHeight(primary.height/25)
         self.road_button4.setText(str(self.road_array[3]))
         self.road_button4.clicked.connect(self.road_button_click_4)
-        self.road_button4.clicked.connect(self.copy_map_to_sections)
+
 
         self.road_button5 = QPushButton(self.map_widget)
         self.road_button5.setMaximumWidth(primary.width/30)
@@ -312,7 +312,7 @@ class Freeway_Window(QMainWindow):
         self.road_button5.setMinimumHeight(primary.height/25)
         self.road_button5.setText(str(self.road_array[4]))
         self.road_button5.clicked.connect(self.road_button_click_5)
-        self.road_button5.clicked.connect(self.copy_map_to_sections)
+
 
 
         #ADD VEHICLES
@@ -602,7 +602,8 @@ class Freeway_Window(QMainWindow):
         self.min_speed.setMaximum(upper_bound)
         self.max_speed.setMinimum(lower_bound)
 
-    
+
+    #CAN PROBLY DELETE
     def clear_carla_vehicles(self):
         for i in self.carla_vehicle_list_subject_lead:
             self.freewayenv.remove_full_path_vehicle(i)
@@ -617,116 +618,22 @@ class Freeway_Window(QMainWindow):
             self.freewayenv.remove_full_path_vehicle(i)
 
 
-    def add_carla_vehicles(self):
-
-        #subject lane vehicle settings
-        subject_cars = list()
-        for i in self.add_vehicles_widget.subject_vehicle_list:
-            if i.lead == True:
-                lead_string = "follow"
-            else:
-                lead_string = "lead"
-            model = carla_vehicle_list.vehicle_list[i.model]
-            data = tuple((i.gap,model,lead_string,i.color_r,i.color_g,i.color_b))
-            subject_cars.append(data)
-
-        #left lane vehicle settings
-        left_cars = list()
-        for i in self.add_vehicles_widget.left_vehicle_list:
-            if i.lead == True:
-                lead_string = "follow"
-            else:
-                lead_string = "lead"
-            model = carla_vehicle_list.vehicle_list[i.model]
-            data = tuple((i.gap,model,lead_string,i.color_r,i.color_g,i.color_b))
-            left_cars.append(data)
-
-
-        #subject lane vehicles
-        for car in subject_cars:
-            print("gap =", car[0])
-            color = ("{},{},{}".format(car[3],car[4],car[5]))
-            subject_car = self.freewayenv.add_full_path_vehicle(gap = car[0], model_name=car[1], vehicle_type = car[2], 
-                                                            choice = "subject",vehicle_color=color)
-            if car[2] == "lead":
-                self.carla_vehicle_list_subject_lead.append(subject_car)
-            else:
-                self.carla_vehicle_list_subject_follow.append(subject_car)
-
-        #left lane vehicles
-        for car in left_cars:
-            color = ("{},{},{}".format(car[3],car[4],car[5]))
-            left_car = self.freewayenv.add_full_path_vehicle(gap = car[0], model_name=car[1], vehicle_type = car[2], 
-                                                        choice = "left", vehicle_color=color)
-
-            if car[2] == "lead":
-                self.carla_vehicle_list_left_lead.append(left_car)
-            else:
-                self.carla_vehicle_list_left_follow.append(left_car)
-
-
-    #broken
-    def copy_map_color_to_sections(self):
-
-        car_color_list = list()
-        for widget in self.add_vehicles_widget.map_background.children():
-            if widget.objectName() == "car":
-                lane = widget.lane
-                lead = widget.lead
-                position = widget.position
-                r = widget.color_r
-                g = widget.color_g
-                b = widget.color_b
-                text = widget.text()
-                tupl = tuple((lane,lead,position,r,g,b,text))
-                car_color_list.append(tupl)
-
-        
-        for i in range(1,len(section_vector.page_list)):
-            for car in section_vector.page_list[i].map_background.children():
-                if car.objectName() == "car":
-                    print(car.text())
-                    for colors in car_color_list:
-                        if colors[6] == car.text():
-                            r = colors[3]
-                            g = colors[4]
-                            b = colors[5]
-                            text_color = "white"
-                            car.setStyleSheet("background:rgb({},{},{}); color:{};".format(r,g,b,text_color))
-
-
 
 
     def copy_map_to_sections(self):
-        
-        #self.clear_carla_vehicles()
-        #self.add_carla_vehicles()
 
-        num_cars = 0
-        for i in self.add_vehicles_widget.subject_vehicle_list:
-            num_cars += 1
-        for i in self.add_vehicles_widget.left_vehicle_list:
-            num_cars += 1
+        #find difference in number of cars in add_vehicle page and each edit_section page
+        #if there are no new cars, return
+        add_vehicles_car_count = len(self.add_vehicles_widget.all_vehicles_list)
+        section_vehicles_car_count = len(section_vector.page_list[1].vehicle_list)
+        if add_vehicles_car_count == section_vehicles_car_count:
+            return
 
 
-
+        #for however many new cars there are, copy all of their attributes and put them into
+        #a tuple containing all necessary information
         car_attribute_list = list()
-        """
-        for widget in self.add_vehicles_widget.map_background.children():
-            if widget.objectName() == "car":
-                lane = widget.lane
-                lead = widget.lead
-                gap = widget.gap
-                model = widget.model
-                r = widget.color_r
-                g = widget.color_g
-                b = widget.color_b
-                tupl = tuple((lane,lead,gap,model,r,g,b))
-                car_attribute_list.append(tupl)
-                self.temp_position = widget.position
-        """
-
-        for i in range(0,num_cars):
+        for i in range(section_vehicles_car_count,add_vehicles_car_count):
             car = self.add_vehicles_widget.all_vehicles_list[i]
             lane = car.lane
             lead = car.lead
@@ -735,90 +642,77 @@ class Freeway_Window(QMainWindow):
             r = car.color_r
             g = car.color_g
             b = car.color_b
-            tupl = tuple((lane,lead,gap,model,r,g,b))
+            position = car.position
+            tupl = tuple((lane,lead,gap,model,r,g,b,position))
             car_attribute_list.append(tupl)
-            self.temp_position = car.position
 
-                
-
-        
+        #iterate over all section pages
         for i in range(1,len(section_vector.page_list)):
+            edit_page = section_vector.page_list[i] #current page to add vehicles to
+            z = section_vehicles_car_count + 1 #vehicle number that will appear on new vehicles added (indexed starting at 1)
 
-            z = 1
-            subject_lead_count = 0
-            subject_follow_count = 0
-            left_lead_count = 0
-            left_follow_count = 0
-            for settings in car_attribute_list:
+            for settings in car_attribute_list: #iterate over new vehicle settings
                 car_copy = vehicle.Vehicle(settings[0],settings[1],settings[2],settings[3],settings[4],settings[5],settings[6])
-                car_copy.setParent(section_vector.page_list[i].map_background)
+                car_copy.position = settings[7]
+                car_copy.setParent(edit_page.map_background)
 
-
-                self.left_follow_gaps = self.add_vehicles_widget.left_follow_gaps
+                self.left_follow_gaps = self.add_vehicles_widget.left_follow_gaps #all gap values as stored in add_vehicles page to help car placement
                 self.subject_follow_gaps = self.add_vehicles_widget.subject_follow_gaps
                 self.left_lead_gaps = self.add_vehicles_widget.left_lead_gaps
                 self.subject_lead_gaps = self.add_vehicles_widget.subject_lead_gaps
 
-                placement_reference = section_vector.page_list[i].map_background.width() 
+                placement_reference = section_vector.page_list[i].map_background.width() #place cars relative to map width
 
                 if car_copy.lead == 0:
                     if car_copy.lane == "subject":
-                        car_copy.move(placement_reference/1.48, self.subject_lead_gaps[subject_lead_count])
-                        subject_lead_count += 1
+                        car_copy.move(placement_reference/1.48, self.subject_lead_gaps[edit_page.subject_lead_count])
+                        edit_page.subject_lead_count += 1
                     else:
-                        car_copy.move(placement_reference/1.77, self.left_lead_gaps[left_lead_count])
-                        left_lead_count += 1
+                        car_copy.move(placement_reference/1.77, self.left_lead_gaps[edit_page.left_lead_count])
+                        edit_page.left_lead_count += 1
 
                 else:
                     if car_copy.lane == "subject":
-                        car_copy.move(placement_reference/1.48, self.subject_follow_gaps[subject_follow_count])
-                        subject_follow_count += 1
+                        car_copy.move(placement_reference/1.48, self.subject_follow_gaps[edit_page.subject_follow_count])
+                        edit_page.subject_follow_count += 1
                     else:
-                        car_copy.move(placement_reference/1.77, self.left_follow_gaps[left_follow_count])
-                        left_follow_count += 1
+                        car_copy.move(placement_reference/1.77, self.left_follow_gaps[edit_page.left_follow_count])
+                        edit_page.left_follow_count += 1
                 
+                #use z-1 to edit pages because z indexing starts at 1
                 section_vector.page_list[i].edit_vehicle_list[z-1].title_text.setText("Edit Vehicle {}".format(z))
-                section_vector.page_list[i].edit_vehicle_list[z-1].car_index = z
+                section_vector.page_list[i].edit_vehicle_list[z-1].car_index = z -1
                 section_vector.page_list[i].edit_vehicle_list[z-1].vehicle_model.setCurrentText(settings[3])
                 section_vector.page_list[i].edit_vehicle_list[z-1].vehicle_color_r.setValue(settings[4])
                 section_vector.page_list[i].edit_vehicle_list[z-1].vehicle_color_g.setValue(settings[5])
                 section_vector.page_list[i].edit_vehicle_list[z-1].vehicle_color_b.setValue(settings[6])
                 
-
-                #car_copy.car_index = z
+                #use z-1 to connect car click to function car_click()
+                #set object name for convenience
+                #set text of vehicle to z value, increment z by 1
                 car_copy.clicked.connect(partial(self.car_click,i,z-1) )    
                 car_copy.setObjectName("car")
-                car_copy.position = self.temp_position
                 car_copy.setText(str(z))
                 section_vector.page_list[i].vehicle_list.append(car_copy)
                 z+=1
                 car_copy.show()
 
-        """
-        #keep original cars on top
-        for page in range(1,len(section_vector.page_list)):
-            for i in range(0,num_cars):
-                cur_page = section_vector.page_list[page]
-                cur_page.vehicle_list[i].raise_()
-        """
 
 
     def add_vehicle_edit_windows(self):
 
-        car_count = 0
-        for widget in self.add_vehicles_widget.map_background.children():
-            if widget.objectName() == "car":
-                car_count += 1
+        car_count = len(self.add_vehicles_widget.all_vehicles_list)
+        page_count = len(section_vector.page_list[1].edit_vehicle_list)
 
         for page in range(1,len(section_vector.page_list)):
-            for car_index in range(0,car_count):
+            for car_index in range(page_count,car_count):
                 edit_car = edit_vehicle.Edit_Vehicle_Widget(car_index+1,section_vector.page_list[page])
                 edit_car.setParent(section_vector.page_list[page])
-                #edit_car.car_index = car_index
                 edit_car.setObjectName("edit")
                 edit_car.safety_distance.setValue(self.safety_distance.value()) 
                 edit_car.hide()
                 section_vector.page_list[page].edit_vehicle_list.append(edit_car)
+
 
 
     def car_click(self,page_index,car_index):
@@ -903,20 +797,13 @@ class Freeway_Window(QMainWindow):
 
 
     def run(self):
-        num_vehicles = 0
-        for i in self.add_vehicles_widget.subject_vehicle_list:
-            num_vehicles += 1
-        for i in self.add_vehicles_widget.left_vehicle_list:
-            num_vehicles += 1
 
-
+        num_vehicles = len(self.add_vehicles_widget.all_vehicles_list)
         allow_collisions = self.allow_collisions.isChecked()
         minimum_speed = self.min_speed.value()
         maximum_speed = self.max_speed.value()
         view = self.start_sim_pop_up.choose_view.currentIndex()
         control = self.start_sim_pop_up.choose_control.currentIndex()
-
-
 
         try:
             
@@ -928,13 +815,12 @@ class Freeway_Window(QMainWindow):
                 for j in range(0,num_vehicles):
                     car_index = section_vector.page_list[i].edit_vehicle_list[j].car_index
 
+                    
                     current_car = None
-                    for cars in self.add_vehicles_widget.subject_vehicle_list:
-                        if str(car_index) == cars.text():
+                    for cars in self.add_vehicles_widget.all_vehicles_list:
+                        if str(car_index + 1) == cars.text():
                             current_car = cars
-                    for cars in self.add_vehicles_widget.left_vehicle_list:
-                        if str(car_index) == cars.text():
-                            current_car = cars
+
 
                     lead_input = "lead"
                     if current_car.lead == 1:

@@ -164,7 +164,11 @@ class Edit_Section_Window(QWidget):
         #VEHICLE OBJECTS
         self.vehicle_list = list()
 
-        #ADD VEHICLES
+        #VEHICLE COUNTS (for copy_map_to_sections())
+        self.subject_lead_count = 0
+        self.subject_follow_count = 0
+        self.left_lead_count = 0
+        self.left_follow_count = 0
 
 
         #add vehicles button

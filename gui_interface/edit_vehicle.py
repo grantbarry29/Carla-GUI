@@ -222,11 +222,19 @@ class Edit_Vehicle_Widget(QFrame):
 
     def close(self):
 
-        
-
+        """
+        for car in self.parent().freeway_window.add_vehicles_widget.all_vehicles_list:
+            if int(car.text()) == self.car_index:
+                print("car:")
+                print(car.text())
+                print(car.position)
+                print(car.lane)
+                print(car.lead)
+                print("\n")
+        """
         for car in self.parent().freeway_window.add_vehicles_widget.map_background.children():
             if car.objectName() == "car":
-                if int(car.text()) == self.car_index:
+                if int(car.text()) == self.car_index + 1:
 
                     r = self.vehicle_color_r.value()
                     g = self.vehicle_color_g.value()
@@ -288,16 +296,14 @@ class Edit_Vehicle_Widget(QFrame):
 
 
         self.copy_color_and_model_to_sections()
+        
         self.hide()
         self.parent().hide()
         self.parent().show()
 
     def copy_color_and_model_to_sections(self):
-        num_vehicles = 0
-        for i in self.parent().freeway_window.add_vehicles_widget.subject_vehicle_list:
-            num_vehicles += 1
-        for i in self.parent().freeway_window.add_vehicles_widget.left_vehicle_list:
-            num_vehicles += 1
+
+        num_vehicles = len(self.parent().freeway_window.add_vehicles_widget.all_vehicles_list)
 
         car_list = self.parent().edit_vehicle_list
         tuple_list = list()
@@ -319,12 +325,8 @@ class Edit_Vehicle_Widget(QFrame):
                 edit_page.vehicle_color_g.setValue(tuple_list[i][3])
                 edit_page.vehicle_color_b.setValue(tuple_list[i][4])
 
-                """
-                error_fix = len(section_vector.page_list[1].vehicle_list)
-                index = error_fix - 1 - i
-                vehicle = section_vector.page_list[page].vehicle_list[index]
-                vehicle.change_color(tuple_list[index][2],tuple_list[index][3],tuple_list[index][4])
-                """
+                car = section_vector.page_list[page].vehicle_list[i]
+                car.change_color(tuple_list[i][2],tuple_list[i][3],tuple_list[i][4])
 
                 
 

@@ -41,8 +41,9 @@ class Drop_Down_Window_Add(QDialog):
         self.gap.setMaximumWidth(primary.width/30)
         self.gap.setMaximumHeight(primary.height/30)
         self.gap.setAlignment(QtCore.Qt.AlignCenter)
-        self.gap.setMinimum(5)
+        self.gap.setMinimum(8)
         self.gap.setValue(10)
+        self.gap.setMaximum(35)
 
 
 

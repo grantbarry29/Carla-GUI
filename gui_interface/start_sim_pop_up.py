@@ -31,7 +31,7 @@ class Start_Sim_Pop_Up(QDialog):
 
         #gap size
         self.choose_view_text = QLabel()
-        self.choose_view_text.setText("Choose View Type")
+        self.choose_view_text.setText("View Type")
 
         self.choose_view = QComboBox()
         self.choose_view.addItem("First Person")
@@ -42,7 +42,7 @@ class Start_Sim_Pop_Up(QDialog):
 
         #vehicle model
         self.choose_control_text = QLabel()
-        self.choose_control_text.setText("Choose Control Type")
+        self.choose_control_text.setText("Control Type")
 
         self.choose_control = QComboBox()
         self.choose_control.addItem("Drive Automatically")
