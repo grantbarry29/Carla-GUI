@@ -4,12 +4,15 @@ from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QFont, QPixmap
 import edit_section
 import freeway_window
-import gui_test as primary
+import home as primary
 import carla_vehicle_list
 
 
 
 class Drop_Down_Window_Add(QDialog):
+    """
+    Drop down window used to add vehicles to add_vehicles.py
+    """
     def __init__(self,lane,parent=None):
         super(Drop_Down_Window_Add, self).__init__(parent)
         self.parent_window = parent
@@ -19,13 +22,15 @@ class Drop_Down_Window_Add(QDialog):
     def initUI(self):
         self.grid = QGridLayout()
         self.setLayout(self.grid)
+        self.setWindowTitle("Add Vehicle")
         self.grid.setContentsMargins(0,10,0,0)
 
-
+        #dimensions
         self.setMinimumHeight(primary.height/3)
         self.setMinimumWidth(primary.width/8)
         self.setMaximumHeight(primary.height/3)
         self.setMaximumWidth(primary.width/8)
+
 
         #close button
         self.close_button = QPushButton()
@@ -46,7 +51,6 @@ class Drop_Down_Window_Add(QDialog):
         self.gap.setMaximum(35)
 
 
-
         #vehicle model
         self.vehicle_model_text = QLabel()
         self.vehicle_model_text.setText("Model")
@@ -54,6 +58,7 @@ class Drop_Down_Window_Add(QDialog):
         self.vehicle_model = QComboBox()
         for vehicle in carla_vehicle_list.vehicle_list:
             self.vehicle_model.addItem(vehicle)
+
 
         #vehicle type 
         self.vehicle_type_text = QLabel()
@@ -107,7 +112,6 @@ class Drop_Down_Window_Add(QDialog):
         self.horiz_layout.addWidget(self.vehicle_color_b)
 
 
-
         #add button
         self.add_button = QPushButton()
         self.add_button.setText("Add")
@@ -118,9 +122,8 @@ class Drop_Down_Window_Add(QDialog):
         
 
 
-
         #GRID SETTINGS
-        #self.grid.addWidget(self.close_button, 0,0,1,2)
+        #self.grid.addWidget(self.close_button, 0,0,1,2) close button removed from grid and move() function used instead
         self.grid.addWidget(self.gap_text, 1,0,1,1)
         self.grid.addWidget(self.gap, 1,1,1,1)
         self.grid.addWidget(self.vehicle_model_text, 2,0,1,1)
@@ -135,6 +138,10 @@ class Drop_Down_Window_Add(QDialog):
 
 
     def close(self):
+        """
+        connected: self.close_button.clicked
+        function: closes the drop down window to add vehicles -- reenables disabled buttons 
+        """
         self.hide()
         self.parent_window.hide()
         self.parent_window.show()

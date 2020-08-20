@@ -12,7 +12,7 @@ import sys
 sys.path.append("..")
 
 
-
+#get user screen size
 app = QtWidgets.QApplication(sys.argv)
 screen = app.primaryScreen()
 width = screen.size().width()
@@ -93,11 +93,19 @@ class Start_Window(QMainWindow):
         
 
     def go_to_freeway(self):
+        """
+        connected: self.freeway_button
+        function: destroys self and goes to freeway gui
+        """
         self.new = Fway.Freeway_Window(self)
         self.close()
         self.new.show()
 
     def go_to_intersection(self):
+        """
+        connected: self.intersection_button
+        function: destroys self and goes to urban gui
+        """
         self.new = Inter.Intersection_Window(self)
         self.close()
         self.new.show()

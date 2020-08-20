@@ -7,9 +7,13 @@ import vehicle
 import add_vehicles
 import carla_vehicle_list
 
-import gui_test as primary
+import home as primary
 
 class Edit_Vehicle_Ego_Widget(QFrame):
+    """
+    QFrame for editing ego vehicle. This frame appears when clicking on the ego vehicle
+    All edit ego settings are contained in this object
+    """
     def __init__(self,parent=None):
         super(Edit_Vehicle_Ego_Widget, self).__init__(parent)
         self.parent_window = parent
@@ -24,10 +28,12 @@ class Edit_Vehicle_Ego_Widget(QFrame):
         self.setFrameStyle(1)
         self.setAutoFillBackground(True)
 
+        #dimensions
         self.setMinimumWidth(primary.width/3.5)
         self.setMaximumHeight(primary.height)
         self.setMinimumHeight(primary.height)
         self.setMaximumWidth(primary.width/3.5)
+
 
         #close button
         self.close_button = QPushButton(self)
@@ -43,8 +49,6 @@ class Edit_Vehicle_Ego_Widget(QFrame):
         self.title_text.setFont(QFont("Arial", 20))
         self.title_text.setMaximumHeight(primary.height/20)
         self.title_text.setAlignment(QtCore.Qt.AlignHCenter)
-        #self.title_text.setStyleSheet("background-color: yellow;")
-
 
      
         #vehicle model
@@ -56,7 +60,7 @@ class Edit_Vehicle_Ego_Widget(QFrame):
         self.vehicle_model.setMaximumWidth(primary.width/6)
         for vehicle in carla_vehicle_list.vehicle_list:
             self.vehicle_model.addItem(vehicle)
-        
+        self.vehicle_model.setCurrentIndex(20)
 
 
         #safety distance
@@ -64,7 +68,7 @@ class Edit_Vehicle_Ego_Widget(QFrame):
         self.safety_distance_text.setText("Safety Distance (m)")
         self.safety_distance_text.setAlignment(QtCore.Qt.AlignCenter)
         self.safety_distance_text.setMinimumWidth(primary.width/9)
-        #self.safety_distance_text.setStyleSheet("background-color: red;")
+
 
         self.safety_distance = QSpinBox()
         self.safety_distance.setMaximumWidth(primary.width/30)
@@ -137,12 +141,12 @@ class Edit_Vehicle_Ego_Widget(QFrame):
         #spacer
         self.spacer = QWidget()
         self.spacer.setMaximumHeight(primary.height/15)
-        #self.spacer.setStyleSheet("background-color: red;")
+
 
 
 
         #GRID SETTINGS
-        #self.grid.addWidget(self.close_button,             0,0,1,1)
+        #self.grid.addWidget(self.close_button,             0,0,1,1) close button was removed from grid and move() function is used instead
         self.grid.addWidget(self.title_text,               1,0,1,2)
         self.grid.addWidget(self.vehicle_model_text,       2,0,1,1)
         self.grid.addWidget(self.vehicle_model,            2,1,1,1)
@@ -161,7 +165,13 @@ class Edit_Vehicle_Ego_Widget(QFrame):
 
 
     def close(self):
-        #ego vehicle settings
+        """
+        connected: self.close_button.clicked
+        function: when edits are made to ego_vehicle, the close buton will trigger all of the edits taking place in both
+        the GUI and in the CARLA simulation
+        """
+
+        #ego vehicle settings applied to window
         ego_model = carla_vehicle_list.vehicle_list[self.vehicle_model.currentText()]
         color_r = self.vehicle_color_r.value()
         color_g = self.vehicle_color_g.value()
@@ -169,6 +179,7 @@ class Edit_Vehicle_Ego_Widget(QFrame):
         ego_color_input = "{},{},{}".format(color_r,color_g,color_b)
         ego_safety_distance = self.safety_distance.value()
 
+        #apply to carla vehicle
         self.parent().freewayenv.edit_ego_vehicle(
                 vehicle_color =ego_color_input,
                 safety_distance=ego_safety_distance,

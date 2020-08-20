@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QFont, QPixmap
 import sys
 
-import gui_test as primary
+import home as primary
 
 class Intersection_Window(QMainWindow):
     def __init__(self,parent=None):

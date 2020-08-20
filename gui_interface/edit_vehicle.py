@@ -8,9 +8,13 @@ import add_vehicles
 import section_vector
 import carla_vehicle_list
 
-import gui_test as primary
+import home as primary
 
 class Edit_Vehicle_Widget(QFrame):
+    """
+    QFrame object to edit each vehicle
+    This object will appear when clicking on any vehicle in edit_section.py
+    """
     def __init__(self,car_index,parent=None):
         super(Edit_Vehicle_Widget, self).__init__(parent)
         self.parent_window = parent
@@ -23,13 +27,16 @@ class Edit_Vehicle_Widget(QFrame):
         self.setLayout(self.grid)
         self.grid.setContentsMargins(15,15,0,0)
 
+        #set frame border
         self.setFrameStyle(1)
         self.setAutoFillBackground(True)
 
+        #dimensions
         self.setMinimumWidth(primary.width/3.5)
         self.setMaximumHeight(primary.height)
         self.setMinimumHeight(primary.height)
         self.setMaximumWidth(primary.width/3.5)
+
 
         #close button
         self.close_button = QPushButton()
@@ -44,7 +51,6 @@ class Edit_Vehicle_Widget(QFrame):
         self.title_text.setFont(QFont("Arial", 20))
         self.title_text.setMaximumHeight(primary.height/20)
         self.title_text.setAlignment(QtCore.Qt.AlignHCenter)
-        #self.title_text.setStyleSheet("background-color: yellow;")
 
         
         #vehicle model
@@ -63,7 +69,6 @@ class Edit_Vehicle_Widget(QFrame):
 
         self.vary_speed_button = QRadioButton()
         self.vary_speed_button.setStyleSheet("margin-left:50%; margin-right:50%;")
-
 
 
         #maintain max speed test
@@ -89,17 +94,14 @@ class Edit_Vehicle_Widget(QFrame):
         self.lane_change_yes.setText("Yes")
         self.lane_change_yes.clicked.connect(self.lane_yes_click)
         
-
         self.lane_change_widget = QWidget()
         self.lane_change_grid = QHBoxLayout()
 
         self.lane_change_widget.setLayout(self.lane_change_grid)
         self.lane_change_widget.setMaximumHeight(primary.height/8)
 
-
         self.lane_change_grid.addWidget(self.lane_change_yes)
         self.lane_change_grid.addWidget(self.lane_change_no)
-
 
 
         #lane change time
@@ -150,7 +152,6 @@ class Edit_Vehicle_Widget(QFrame):
         self.vehicle_color_g = QSpinBox()
         self.vehicle_color_b = QSpinBox()
 
-
         self.vehicle_color_r.setAlignment(QtCore.Qt.AlignCenter)
         self.vehicle_color_g.setAlignment(QtCore.Qt.AlignCenter)
         self.vehicle_color_b.setAlignment(QtCore.Qt.AlignCenter)
@@ -185,11 +186,12 @@ class Edit_Vehicle_Widget(QFrame):
         #spacer
         self.spacer = QWidget()
         self.spacer.setMaximumHeight(primary.height/15)
-        #self.spacer.setStyleSheet("background-color: red;")
+
 
         #spacer 2
         self.spacer2 = QLabel()
         self.spacer2.setMaximumHeight(primary.height/10)
+
 
 
         #GRID SETTINGS
@@ -214,27 +216,16 @@ class Edit_Vehicle_Widget(QFrame):
         
 
 
-    def get_this_car(self):
-        for car in self.parent().freeway_window.add_vehicles_widget.map_background.children():
-            if car.objectName() == "car":
-                if int(car.text()) == self.car_index:
-                    return car
 
     def close(self):
+        """
+        connected: self.close_button.clicked
+        function: applies all edits made to clicked vehicle on the vehicle map and in the CARLA environment
+        """
 
-        """
-        for car in self.parent().freeway_window.add_vehicles_widget.all_vehicles_list:
-            if int(car.text()) == self.car_index:
-                print("car:")
-                print(car.text())
-                print(car.position)
-                print(car.lane)
-                print(car.lead)
-                print("\n")
-        """
-        for car in self.parent().freeway_window.add_vehicles_widget.map_background.children():
+        for car in self.parent().freeway_window.add_vehicles_widget.map_background.children(): #iterate over all cars
             if car.objectName() == "car":
-                if int(car.text()) == self.car_index + 1:
+                if int(car.text()) == self.car_index + 1: #if car matches this edit_page
 
                     r = self.vehicle_color_r.value()
                     g = self.vehicle_color_g.value()
@@ -242,7 +233,7 @@ class Edit_Vehicle_Widget(QFrame):
                     model = carla_vehicle_list.vehicle_list[self.vehicle_model.currentText()]
                     
                     if car.lane == "subject" and car.lead: # if subject and follow
-                        vehicle = self.parent().freeway_window.freewayenv.edit_full_path_vehicle_init_setting(
+                        vehicle = self.parent().freeway_window.freewayenv.edit_full_path_vehicle_init_setting( #make edit in carla simulation
                             uniquename=  self.parent().freeway_window.carla_vehicle_list_subject_follow[car.position],
                             vehicle_type= 'follow',
                             choice= 'subject',
@@ -255,7 +246,7 @@ class Edit_Vehicle_Widget(QFrame):
 
 
                     if car.lane == "subject" and not car.lead: #if subject and lead
-                        vehicle = self.parent().freeway_window.freewayenv.edit_full_path_vehicle_init_setting(
+                        vehicle = self.parent().freeway_window.freewayenv.edit_full_path_vehicle_init_setting( #make edit in carla simulation
                             uniquename=  self.parent().freeway_window.carla_vehicle_list_subject_lead[car.position],
                             vehicle_type= 'lead',
                             choice= 'subject',
@@ -268,7 +259,7 @@ class Edit_Vehicle_Widget(QFrame):
 
 
                     if car.lane == "left" and car.lead: #if left and follow
-                        vehicle = self.parent().freeway_window.freewayenv.edit_full_path_vehicle_init_setting(
+                        vehicle = self.parent().freeway_window.freewayenv.edit_full_path_vehicle_init_setting( #make edit in carla simulation
                             uniquename=  self.parent().freeway_window.carla_vehicle_list_left_follow[car.position],
                             vehicle_type= 'follow',
                             choice= 'left',
@@ -281,7 +272,7 @@ class Edit_Vehicle_Widget(QFrame):
 
 
                     if car.lane == "left" and not car.lead:#if left and lead
-                        vehicle = self.parent().freeway_window.freewayenv.edit_full_path_vehicle_init_setting(
+                        vehicle = self.parent().freeway_window.freewayenv.edit_full_path_vehicle_init_setting( #make edit in carla simulation
                             uniquename=  self.parent().freeway_window.carla_vehicle_list_left_lead[car.position],
                             vehicle_type= 'lead',
                             choice= 'left',
@@ -292,22 +283,31 @@ class Edit_Vehicle_Widget(QFrame):
                         self.parent().freeway_window.carla_vehicle_list_left_lead.pop(car.position)
                         self.parent().freeway_window.carla_vehicle_list_left_lead.insert(car.position,vehicle)
                         
-                    car.change_color(r,g,b)
+                    car.change_color(r,g,b) #change color of vehicle
 
 
-        self.copy_color_and_model_to_sections()
+        self.copy_color_and_model_to_sections() #copy color and model settings to all vehicle sections
         
         self.hide()
         self.parent().hide()
         self.parent().show()
 
     def copy_color_and_model_to_sections(self):
+        """
+        connected: none
+        function: called by close() function
+        this function will copy the color and model of all vehicles from add_vehicles.py to all sections of edit_section.py
+        this allows for the color of each car on the map to be the same as the vehicles in the CARLA simulation
+        """
 
+        #number of vehicles
         num_vehicles = len(self.parent().freeway_window.add_vehicles_widget.all_vehicles_list)
 
+        #all edit vehicle pages from add_vehicles.py
         car_list = self.parent().edit_vehicle_list
+
         tuple_list = list()
-        for i in range(0,num_vehicles):
+        for i in range(0,num_vehicles): #iterate over all vehicles and retrieve color and model
             index = car_list[i].car_index
             model = car_list[i].vehicle_model.currentText()
             r = car_list[i].vehicle_color_r.value()
@@ -316,32 +316,45 @@ class Edit_Vehicle_Widget(QFrame):
             tupl = tuple((index,model,r,g,b))
             tuple_list.append(tupl)
 
-        for page in range(1,len(section_vector.page_list)):
-            for i in range(0,num_vehicles):
+        for page in range(1,len(section_vector.page_list)): #iterate over all sections 
+            for i in range(0,num_vehicles): #iterate over all vehicles 
                 edit_page = section_vector.page_list[page].edit_vehicle_list[i]
 
-                edit_page.vehicle_model.setCurrentText(tuple_list[i][1])
-                edit_page.vehicle_color_r.setValue(tuple_list[i][2])
+                edit_page.vehicle_model.setCurrentText(tuple_list[i][1]) #set text 
+                edit_page.vehicle_color_r.setValue(tuple_list[i][2]) #set edit_vehicle.py color
                 edit_page.vehicle_color_g.setValue(tuple_list[i][3])
                 edit_page.vehicle_color_b.setValue(tuple_list[i][4])
 
                 car = section_vector.page_list[page].vehicle_list[i]
-                car.change_color(tuple_list[i][2],tuple_list[i][3],tuple_list[i][4])
-
-                
-
+                car.change_color(tuple_list[i][2],tuple_list[i][3],tuple_list[i][4]) #set vehicle color
 
 
     def lane_no_click(self):
+        """
+        connected: self.lane_change_no.clicked
+        function: disables lane change time option if no lane change is selected
+        """
+
         self.lane_change_time.setDisabled(True)
         self.lane_change_time_text.setDisabled(True)
 
     def lane_yes_click(self):
+        """
+        connected: self.lane_change_yes.clicked
+        function: enables lane change time option if lane change is selected
+        """
+
         self.lane_change_time.setDisabled(False)
         self.lane_change_time_text.setDisabled(False)
 
 
+    #BROKEN
     def car_delete(self):
+        """
+        connected: self.delete_button.clicked
+        function: deletes vehicle
+        THIS FUNCTION IS BROKEN AND NEEDS TO BE CORRECTLY IMPLEMENTED
+        """
 
         
         #remove from add_vehicles widget

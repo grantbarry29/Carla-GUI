@@ -4,10 +4,14 @@ from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QFont, QPixmap
 import edit_section
 import freeway_window
-import gui_test as primary
+import home as primary
 
 
-
+"""
+ORIGINAL DESIGN SUPPORTED VEHICLE EDITING IN ADD_VEHICLE.PY
+THIS PAGE IS NOW UNUSED BUT IS BEING LEFT FOR FUTURE REFERENCE OR IMPLEMENTATION
+YOU CAN DELETE THIS FILE IF YOU PLESE
+"""
 class Drop_Down_Window_Edit(QDialog):
     def __init__(self,lane,parent=None):
         super(Drop_Down_Window_Edit, self).__init__(parent)
