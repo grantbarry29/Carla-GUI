@@ -3,8 +3,9 @@
 import sys
 import glob
 from configobj import ConfigObj
-sys.path.append("E:\WindowsNoEditor\PythonAPI\examples\gui intersection")
-sys.path.append("E:\WindowsNoEditor\PythonAPI\examples\backend")
+sys.path.append("E:\WindowsNoEditor\PythonAPI\example\gui intersection")
+sys.path.append("E:\WindowsNoEditor\PythonAPI\example\backend")
+sys.path.append("E:\WindowsNoEditor\PythonAPI\example")
 sys.path.append("E:\WindowsNoEditor\PythonAPI\carla\dist\carla-0.9.9-py3.7-win-amd64.egg")
 
 
@@ -64,7 +65,7 @@ class Main(QMainWindow):
         self.redLightDuration = 10
         self.yellowLightDuration = 5
         self.greenLightDuration = 10
-        self.gloSafetyDistance = 0
+        self.gloSafetyDistance = 15
         self.ego_spawned = False
         self.cur_ID = [0, 0, 0]
         self.normal_num = -1
@@ -479,6 +480,7 @@ class Main(QMainWindow):
 
     def Max_speed_set(self):
         num = self.inter.spinBoxMaxVFro.value()
+        num = (num * 1000) / 3600
         self.navigation_speed = num
         for i in self.intersection_list:
             i.navigation_speed = num
@@ -602,8 +604,8 @@ class Main(QMainWindow):
         if self.cur_lane == 0 and self.cur_inter == 0:
             if self.addVeh.cobBoxTypeAdDia.currentIndex() == 0:
                 car2 = self.intersection_list[self.cur_inter].add_ego_vehicle(gap=gapNum, model_name=Mname, safety_distance=self.gloSafetyDistance, vehicle_color=color)                
-                car1 = self.intersection_list[self.cur_inter].add_lead_vehicle(lead_distance= 10, vehicle_color="255,255,255")
-                car3 = self.intersection_list[self.cur_inter].add_follow_vehicle(follow_distance= 10, vehicle_color="255,255,255")
+                car1 = self.intersection_list[self.cur_inter].add_lead_vehicle(lead_distance= 10, vehicle_color="255,255,255", safety_distance=self.gloSafetyDistance)
+                car3 = self.intersection_list[self.cur_inter].add_follow_vehicle(follow_distance= 10, vehicle_color="255,255,255", safety_distance=self.gloSafetyDistance)
                 
                 
                 #put into car list for further use
@@ -821,13 +823,13 @@ class Main(QMainWindow):
     def start_simulation(self):
         view_string = None
         human = True
-        if self.simulation.cobBoxViewSimDia.currentIndex == 0:
+        if self.simulation.cobBoxViewSimDia.currentIndex() == 0:
             view_string = "first_person"
-        elif self.simulation.cobBoxViewSimDia.currentIndex == 1:
+        elif self.simulation.cobBoxViewSimDia.currentIndex() == 1:
             view_string = "left"
-        elif self.simulation.cobBoxViewSimDia.currentIndex == 2:
+        elif self.simulation.cobBoxViewSimDia.currentIndex() == 2:
             view_string = "human_driving"
-        if self.simulation.cobBoxConSimDia.currentIndex == 0:
+        if self.simulation.cobBoxConSimDia.currentIndex() == 0:
             human = False
 
         IntersectionBackend(self.env, self.intersection_list, allow_collision = self.collision, spectator_mode = view_string, enable_human_control = human)

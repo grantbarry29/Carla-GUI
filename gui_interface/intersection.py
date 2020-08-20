@@ -1074,7 +1074,7 @@ class Ui_Form(QWidget):
         # Front Translate
         self.setWindowTitle(_translate("Form", "Form"))
         self.SLCol2.setText(_translate("Form", "Allow Collisions"))
-        self.SLMaxVFro.setText(_translate("Form", "Max Speed (m/s)"))
+        self.SLMaxVFro.setText(_translate("Form", "Max Speed (km/h)"))
         self.SLSafDisFro.setText(_translate("Form", "Safety Distance (m)"))
         self.SLNumInterFro.setText(_translate("Form", "Number of Intersections"))
         self.StartSimFro.setText(_translate("Form", "Start Simulation"))
